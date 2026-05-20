@@ -397,6 +397,13 @@
       color: var(--muted);
       text-transform: uppercase;
     }
+    .row-date-more {
+      font-size: 0.6rem;
+      font-weight: 600;
+      color: var(--accent);
+      margin-top: 0.15rem;
+      letter-spacing: 0.02em;
+    }
     .row-right {
       display: flex;
       align-items: center;
@@ -480,6 +487,40 @@
     }
     .form-group textarea { resize: vertical; min-height: 90px; line-height: 1.5; }
     .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+    .session-row {
+      display: grid;
+      grid-template-columns: 1fr 160px 32px;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+      align-items: center;
+    }
+    .session-row input {
+      padding: 0.6rem 0.85rem !important;
+      font-size: 0.92rem !important;
+      margin-bottom: 0 !important;
+    }
+    .btn-remove-session {
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      cursor: pointer;
+      color: var(--muted);
+      font-size: 1.1rem;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: color .12s, border-color .12s, background .12s;
+    }
+    .btn-remove-session:hover { color: #DC2626; border-color: #DC2626; background: #FEF2F2; }
+    .btn-remove-session:disabled { opacity: 0.3; cursor: not-allowed; }
+    @media (max-width: 540px) {
+      .session-row { grid-template-columns: 1fr; gap: 0.4rem; }
+      .btn-remove-session { justify-self: end; }
+    }
 
     /* ── DELIVERY VIEW ── */
     .delivery-header {
@@ -1181,6 +1222,15 @@
   <div class="modal">
     <h2>Ny leverans</h2>
     <div class="form-group">
+      <label>Typ</label>
+      <select id="new-type">
+        <option value="Workshop">Workshop</option>
+        <option value="Utbildning">Utbildning</option>
+        <option value="Möte">Möte</option>
+        <option value="Event">Event</option>
+      </select>
+    </div>
+    <div class="form-group">
       <label>Titel</label>
       <input type="text" id="new-title" placeholder="T.ex. Ledarskapsdag Nyhetsredaktionen">
     </div>
@@ -1195,8 +1245,9 @@
       </div>
     </div>
     <div class="form-group">
-      <label>Datum</label>
-      <input type="date" id="new-date">
+      <label>Tillfällen</label>
+      <div id="sessions-list"></div>
+      <button type="button" class="btn btn-ghost btn-sm" id="add-session-btn" style="padding-left:0; margin-top:.25rem;">+ Lägg till tillfälle</button>
     </div>
     <div class="modal-footer">
       <button class="btn btn-secondary" onclick="closeNewDeliveryModal()">Avbryt</button>
@@ -1289,7 +1340,9 @@
 
   // ── DELIVERIES ──
   async function loadDeliveries() {
-    const { data } = await sb.from('deliveries').select('*').order('created_at', { ascending: false });
+    const { data } = await sb.from('deliveries')
+      .select('*, delivery_sessions(session_date, title, sort_order)')
+      .order('created_at', { ascending: false });
     const grid = document.getElementById('deliveries-grid');
     const empty = document.getElementById('deliveries-empty');
     if (!data || data.length === 0) {
@@ -1305,18 +1358,22 @@
       const row = document.createElement('div');
       row.className = 'delivery-row anim-fadeup';
       row.style.animationDelay = (0.1 + i * 0.05) + 's';
-      const metaParts = [d.client, d.group_name].filter(Boolean);
+      const metaParts = [d.type, d.client, d.group_name].filter(Boolean);
       const meta = metaParts.join(' · ');
-      let dateBlock = '';
-      if (d.delivery_date) {
-        const dt = new Date(d.delivery_date);
+      const sessions = (d.delivery_sessions || [])
+        .filter(s => s.session_date)
+        .sort((a,b) => new Date(a.session_date) - new Date(b.session_date));
+      let dateBlock = '<div class="row-date" style="opacity:0"></div>';
+      if (sessions.length > 0) {
+        const dt = new Date(sessions[0].session_date);
+        const extra = sessions.length > 1
+          ? `<span class="row-date-more">+${sessions.length - 1}</span>` : '';
         dateBlock = `
           <div class="row-date">
             <span class="row-date-day">${dt.getDate()}</span>
             <span class="row-date-month">${months[dt.getMonth()]}</span>
+            ${extra}
           </div>`;
-      } else {
-        dateBlock = `<div class="row-date" style="opacity:0"></div>`;
       }
       row.innerHTML = `
         <span class="row-status-dot status-${d.status}" title="${d.status}"></span>
@@ -1338,14 +1395,33 @@
     return d.toLocaleDateString('sv-SE', { day: 'numeric', month: 'long', year: 'numeric' });
   }
 
+  function addSessionRow(title = '', date = '') {
+    const list = document.getElementById('sessions-list');
+    const row = document.createElement('div');
+    row.className = 'session-row';
+    row.innerHTML = `
+      <input type="text" class="session-title" placeholder="Titel (valfritt, t.ex. Modul 1)" value="${title.replace(/"/g, '&quot;')}">
+      <input type="date" class="session-date" value="${date}">
+      <button type="button" class="btn-remove-session" aria-label="Ta bort tillfälle">×</button>
+    `;
+    row.querySelector('.btn-remove-session').addEventListener('click', () => {
+      if (list.children.length > 1) row.remove();
+    });
+    list.appendChild(row);
+  }
   function openNewDeliveryModal() {
     document.getElementById('new-delivery-modal').classList.add('open');
+    document.getElementById('sessions-list').innerHTML = '';
+    addSessionRow();
     document.getElementById('new-title').focus();
   }
   function closeNewDeliveryModal() {
     document.getElementById('new-delivery-modal').classList.remove('open');
-    ['new-title','new-client','new-group','new-date'].forEach(id => document.getElementById(id).value = '');
+    ['new-title','new-client','new-group'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('new-type').value = 'Workshop';
+    document.getElementById('sessions-list').innerHTML = '';
   }
+  document.getElementById('add-session-btn').addEventListener('click', () => addSessionRow());
 
   document.getElementById('new-delivery-btn').addEventListener('click', openNewDeliveryModal);
   document.getElementById('new-delivery-modal').addEventListener('click', e => {
@@ -1355,24 +1431,60 @@
   document.getElementById('create-delivery-btn').addEventListener('click', async () => {
     const title = document.getElementById('new-title').value.trim();
     if (!title) { showToast('Ange en titel.'); return; }
+    const type = document.getElementById('new-type').value;
+    const firstDate = document.querySelector('#sessions-list .session-date')?.value || null;
     const { data, error } = await sb.from('deliveries').insert({
       title,
+      type,
       client: document.getElementById('new-client').value.trim() || null,
       group_name: document.getElementById('new-group').value.trim() || null,
-      delivery_date: document.getElementById('new-date').value || null,
+      delivery_date: firstDate,
     }).select().single();
     if (error) { showToast('Fel: ' + error.message); return; }
+
+    const sessions = [];
+    document.querySelectorAll('#sessions-list .session-row').forEach((row, i) => {
+      const d = row.querySelector('.session-date').value;
+      const t = row.querySelector('.session-title').value.trim();
+      if (d || t) {
+        sessions.push({
+          delivery_id: data.id,
+          session_date: d || null,
+          title: t || null,
+          sort_order: i,
+        });
+      }
+    });
+    if (sessions.length > 0) {
+      await sb.from('delivery_sessions').insert(sessions);
+    }
+
     closeNewDeliveryModal();
     await loadDeliveries();
-    openDelivery(data);
+    const { data: fresh } = await sb.from('deliveries')
+      .select('*, delivery_sessions(*)').eq('id', data.id).single();
+    openDelivery(fresh);
   });
 
   // ── DELIVERY VIEW ──
+  function summarizeSessions(delivery) {
+    const sessions = (delivery.delivery_sessions || [])
+      .filter(s => s.session_date)
+      .sort((a,b) => new Date(a.session_date) - new Date(b.session_date));
+    if (sessions.length === 0) return '';
+    if (sessions.length === 1) return formatDate(sessions[0].session_date);
+    return `${sessions.length} tillfällen · första ${formatDate(sessions[0].session_date)}`;
+  }
   async function openDelivery(delivery) {
+    if (!delivery.delivery_sessions) {
+      const { data: fresh } = await sb.from('deliveries')
+        .select('*, delivery_sessions(*)').eq('id', delivery.id).single();
+      if (fresh) delivery = fresh;
+    }
     currentDelivery = delivery;
     document.getElementById('delivery-view-title').textContent = delivery.title;
     document.getElementById('delivery-view-meta').textContent =
-      [delivery.client, delivery.group_name, delivery.delivery_date ? formatDate(delivery.delivery_date) : ''].filter(Boolean).join(' · ');
+      [delivery.type, delivery.client, delivery.group_name, summarizeSessions(delivery)].filter(Boolean).join(' · ');
     document.getElementById('delivery-status-select').value = delivery.status;
     showView('delivery-view');
     activateTab('notes');
@@ -1402,17 +1514,22 @@
   }
 
   // ── BEHOVSANALYS ──
+  function firstSessionDate(delivery) {
+    const s = (delivery.delivery_sessions || [])
+      .filter(x => x.session_date)
+      .sort((a,b) => (a.sort_order||0) - (b.sort_order||0))[0];
+    return s ? s.session_date : '';
+  }
   async function loadNotes() {
     const { data } = await sb.from('delivery_notes').select('*').eq('delivery_id', currentDelivery.id).maybeSingle();
-    if (!data) return;
-    document.getElementById('note-client').value = data.purpose ? '' : (currentDelivery.client || '');
+    document.getElementById('note-client').value = currentDelivery.client || '';
     document.getElementById('note-group').value = currentDelivery.group_name || '';
-    document.getElementById('note-date').value = currentDelivery.delivery_date || '';
+    document.getElementById('note-date').value = firstSessionDate(currentDelivery);
     document.getElementById('note-participants').value = currentDelivery.participant_count || '';
-    document.getElementById('note-purpose').value = data.purpose || '';
-    document.getElementById('note-goals').value = data.goals || '';
-    document.getElementById('note-challenges').value = data.challenges || '';
-    document.getElementById('note-other').value = data.other_notes || '';
+    document.getElementById('note-purpose').value = data?.purpose || '';
+    document.getElementById('note-goals').value = data?.goals || '';
+    document.getElementById('note-challenges').value = data?.challenges || '';
+    document.getElementById('note-other').value = data?.other_notes || '';
   }
 
   document.getElementById('save-notes-btn').addEventListener('click', async () => {
@@ -1421,14 +1538,28 @@
     btn.disabled = true;
     btn.textContent = 'Sparar...';
 
+    const noteDate = document.getElementById('note-date').value || null;
     const deliveryUpdate = {
       client: document.getElementById('note-client').value.trim() || null,
       group_name: document.getElementById('note-group').value.trim() || null,
-      delivery_date: document.getElementById('note-date').value || null,
+      delivery_date: noteDate,
       participant_count: parseInt(document.getElementById('note-participants').value) || null,
     };
     await sb.from('deliveries').update(deliveryUpdate).eq('id', currentDelivery.id);
     Object.assign(currentDelivery, deliveryUpdate);
+
+    const sessions = (currentDelivery.delivery_sessions || []).sort((a,b) => (a.sort_order||0) - (b.sort_order||0));
+    if (sessions.length === 0 && noteDate) {
+      const { data: newSess } = await sb.from('delivery_sessions').insert({
+        delivery_id: currentDelivery.id, session_date: noteDate, sort_order: 0
+      }).select().single();
+      if (newSess) currentDelivery.delivery_sessions = [newSess];
+    } else if (sessions.length > 0) {
+      await sb.from('delivery_sessions')
+        .update({ session_date: noteDate })
+        .eq('id', sessions[0].id);
+      sessions[0].session_date = noteDate;
+    }
 
     const notesData = {
       delivery_id: currentDelivery.id,
@@ -1857,7 +1988,7 @@
       fontSize: 36, bold: true, color: 'FFFFFF',
       fontFace: 'Calibri', align: 'left',
     });
-    const metaParts = [currentDelivery.client, currentDelivery.group_name, currentDelivery.delivery_date ? formatDate(currentDelivery.delivery_date) : ''].filter(Boolean);
+    const metaParts = [currentDelivery.client, currentDelivery.group_name, summarizeSessions(currentDelivery)].filter(Boolean);
     if (metaParts.length > 0) {
       cover.addText(metaParts.join(' · '), {
         x: 0.4, y: 2.8, w: 9, h: 0.5,
