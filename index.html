@@ -980,7 +980,7 @@
     <section class="dashboard-hero-image" id="hero-image">
       <div class="hero-text">
         <h1 class="display-1">Workshops &amp; utbildningar</h1>
-        <p class="display-sub" id="hero-subtitle">Planera, leverera, följ upp.</p>
+        <p class="display-sub" id="hero-subtitle">Från första idé till uppföljning.</p>
       </div>
       <span class="hero-credit">Bild: SVT</span>
     </section>
@@ -1330,15 +1330,6 @@
       row.addEventListener('click', () => openDelivery(d));
       grid.appendChild(row);
     });
-    const upcoming = data.filter(d => d.status !== 'Avslutad').length;
-    const done = data.length - upcoming;
-    const sub = document.getElementById('hero-subtitle');
-    if (sub) {
-      const doneLabel = done === 1 ? 'avslutad' : 'avslutade';
-      sub.innerHTML = done > 0
-        ? `<strong>${upcoming}</strong> aktiva · <strong>${done}</strong> ${doneLabel}.`
-        : `<strong>${upcoming}</strong> aktiva.`;
-    }
   }
 
   function formatDate(dateStr) {
