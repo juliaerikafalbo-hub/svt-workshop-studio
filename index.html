@@ -831,8 +831,9 @@
     btn.disabled = false;
     btn.textContent = 'Logga in';
     if (error) {
-      status.textContent = 'Koden stämmer inte eller är utgången. Försök igen.';
+      status.textContent = 'Fel: ' + error.message;
       status.className = 'login-status err';
+      console.error('verifyOtp error:', error);
     } else {
       status.textContent = '';
     }
