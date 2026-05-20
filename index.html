@@ -67,7 +67,23 @@
       color: var(--muted);
       letter-spacing: -0.01em;
       font-weight: 400;
-      margin-top: 0.5rem;
+      margin-top: 0.75rem;
+    }
+    .display-sub strong { color: var(--text); font-weight: 600; }
+
+    /* ── MOTION ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+    .anim-fadeup { animation: fadeUp .55s cubic-bezier(.22,.61,.36,1) both; }
+    .anim-fade   { animation: fadeIn .45s ease both; }
+    @media (prefers-reduced-motion: reduce) {
+      .anim-fadeup, .anim-fade { animation: none; }
     }
 
     /* ── LOGIN ── */
@@ -232,54 +248,99 @@
       flex-direction: column;
     }
     .delivery-row {
+      position: relative;
       display: grid;
-      grid-template-columns: auto 1fr auto;
-      gap: 1rem;
+      grid-template-columns: auto 1fr auto auto;
+      gap: 1.25rem;
       align-items: center;
-      padding: 1.1rem 0.25rem;
-      border-bottom: 1px solid var(--border);
+      padding: 1.15rem 1rem;
+      margin: 0 -1rem;
+      border-radius: 14px;
       cursor: pointer;
-      transition: background .12s;
+      transition: background .25s ease, transform .25s ease, box-shadow .25s ease;
     }
-    .delivery-row:hover { background: var(--surface-alt); }
-    .delivery-row:hover .row-chevron { opacity: 1; transform: translateX(2px); }
+    .delivery-row + .delivery-row::before {
+      content: "";
+      position: absolute;
+      top: -0.5px;
+      left: 1rem;
+      right: 1rem;
+      height: 1px;
+      background: var(--border);
+      transition: opacity .2s ease;
+    }
+    .delivery-row:hover {
+      background: var(--surface);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 24px -8px rgba(99, 82, 64, 0.18), 0 1px 3px rgba(0,0,0,.04);
+    }
+    .delivery-row:hover::before,
+    .delivery-row:hover + .delivery-row::before { opacity: 0; }
+    .delivery-row:hover .row-chevron { opacity: 1; transform: translateX(3px); color: var(--text); }
+    .delivery-row:hover .row-date-day { color: var(--text); }
     .row-status-dot {
       width: 8px;
       height: 8px;
       border-radius: 50%;
       background: var(--status-avslutad);
       flex-shrink: 0;
+      box-shadow: 0 0 0 4px rgba(0,0,0,0);
+      transition: box-shadow .2s;
     }
     .row-status-dot.status-Planering { background: var(--status-planering); }
-    .row-status-dot.status-Pågående { background: var(--status-pagaende); }
-    .row-status-dot.status-Avslutad { background: var(--status-avslutad); }
+    .row-status-dot.status-Pågående  { background: var(--status-pagaende); box-shadow: 0 0 0 4px rgba(0, 135, 90, 0.12); }
+    .row-status-dot.status-Avslutad  { background: var(--status-avslutad); }
     .row-content { min-width: 0; }
     .row-title {
-      font-size: 1.05rem;
+      font-size: 1.075rem;
       font-weight: 600;
-      letter-spacing: -0.01em;
+      letter-spacing: -0.012em;
       color: var(--text);
-      margin-bottom: 0.15rem;
+      margin-bottom: 0.2rem;
     }
     .row-meta {
       font-size: 0.88rem;
       color: var(--muted);
       letter-spacing: -0.005em;
     }
+    .row-date {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.05rem;
+      min-width: 44px;
+      padding: 0 0.25rem;
+      border-left: 1px solid var(--border);
+    }
+    .row-date-day {
+      font-size: 1.5rem;
+      font-weight: 600;
+      letter-spacing: -0.025em;
+      color: var(--muted);
+      font-variant-numeric: tabular-nums;
+      line-height: 1;
+      transition: color .25s ease;
+    }
+    .row-date-month {
+      font-size: 0.65rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
     .row-right {
       display: flex;
       align-items: center;
-      gap: 0.6rem;
-      font-size: 0.88rem;
-      color: var(--muted);
-      font-variant-numeric: tabular-nums;
+      justify-content: center;
+      width: 24px;
     }
     .row-chevron {
       color: var(--border-strong);
-      font-size: 1.2rem;
+      font-size: 1.4rem;
       line-height: 1;
-      opacity: 0.5;
-      transition: opacity .12s, transform .12s;
+      font-weight: 300;
+      opacity: 0.6;
+      transition: opacity .25s ease, transform .25s ease, color .25s ease;
     }
     .empty-state {
       text-align: center;
@@ -846,11 +907,11 @@
     </div>
   </header>
   <main class="dashboard-content">
-    <section class="dashboard-hero">
+    <section class="dashboard-hero anim-fadeup">
       <h1 class="display-1">Mina leveranser.</h1>
       <p class="display-sub" id="hero-subtitle">Planera, leverera, följ upp.</p>
     </section>
-    <div class="dashboard-actions">
+    <div class="dashboard-actions anim-fadeup" style="animation-delay:.08s">
       <h2>Workshops</h2>
       <button class="btn btn-primary btn-sm" id="new-delivery-btn">+ Ny leverans</button>
     </div>
@@ -1143,32 +1204,42 @@
     }
     empty.classList.add('hidden');
     grid.innerHTML = '';
-    data.forEach(d => {
+    const months = ['JAN','FEB','MAR','APR','MAJ','JUN','JUL','AUG','SEP','OKT','NOV','DEC'];
+    data.forEach((d, i) => {
       const row = document.createElement('div');
-      row.className = 'delivery-row';
+      row.className = 'delivery-row anim-fadeup';
+      row.style.animationDelay = (0.1 + i * 0.05) + 's';
       const metaParts = [d.client, d.group_name].filter(Boolean);
       const meta = metaParts.join(' · ');
+      let dateBlock = '';
+      if (d.delivery_date) {
+        const dt = new Date(d.delivery_date);
+        dateBlock = `
+          <div class="row-date">
+            <span class="row-date-day">${dt.getDate()}</span>
+            <span class="row-date-month">${months[dt.getMonth()]}</span>
+          </div>`;
+      } else {
+        dateBlock = `<div class="row-date" style="opacity:0"></div>`;
+      }
       row.innerHTML = `
         <span class="row-status-dot status-${d.status}" title="${d.status}"></span>
         <div class="row-content">
           <div class="row-title">${d.title}</div>
           ${meta ? `<div class="row-meta">${meta}</div>` : ''}
         </div>
-        <div class="row-right">
-          ${d.delivery_date ? `<span>${formatDate(d.delivery_date)}</span>` : ''}
-          <span class="row-chevron">›</span>
-        </div>
+        ${dateBlock}
+        <div class="row-right"><span class="row-chevron">›</span></div>
       `;
       row.addEventListener('click', () => openDelivery(d));
       grid.appendChild(row);
     });
-    // Update hero subtitle with count
     const upcoming = data.filter(d => d.status !== 'Avslutad').length;
     const sub = document.getElementById('hero-subtitle');
     if (sub) {
-      sub.textContent = data.length === 1
-        ? '1 workshop.'
-        : `${data.length} workshops · ${upcoming} aktiva.`;
+      sub.innerHTML = data.length === 1
+        ? '<strong>1</strong> workshop.'
+        : `<strong>${data.length}</strong> workshops · <strong>${upcoming}</strong> aktiva.`;
     }
   }
 
