@@ -299,10 +299,10 @@
     .dashboard-hero h1 { /* uses .display-1 */ }
     .dashboard-actions {
       display: flex;
-      justify-content: space-between;
-      align-items: baseline;
-      margin-bottom: 1.25rem;
-      padding-bottom: 0.75rem;
+      justify-content: flex-end;
+      align-items: center;
+      margin-bottom: 1rem;
+      padding-bottom: 1rem;
       border-bottom: 1px solid var(--border);
     }
     .dashboard-actions h2 {
@@ -979,14 +979,13 @@
   <main>
     <section class="dashboard-hero-image" id="hero-image">
       <div class="hero-text">
-        <h1 class="display-1">Mina leveranser.</h1>
+        <h1 class="display-1">Workshops.</h1>
         <p class="display-sub" id="hero-subtitle">Planera, leverera, följ upp.</p>
       </div>
       <span class="hero-credit">Bild: SVT</span>
     </section>
     <div class="dashboard-content">
       <div class="dashboard-actions anim-fadeup" style="animation-delay:.08s">
-        <h2>Workshops</h2>
         <button class="btn btn-primary btn-sm" id="new-delivery-btn">+ Ny leverans</button>
       </div>
       <div class="deliveries-list" id="deliveries-grid">
@@ -1332,11 +1331,13 @@
       grid.appendChild(row);
     });
     const upcoming = data.filter(d => d.status !== 'Avslutad').length;
+    const done = data.length - upcoming;
     const sub = document.getElementById('hero-subtitle');
     if (sub) {
-      sub.innerHTML = data.length === 1
-        ? '<strong>1</strong> workshop.'
-        : `<strong>${data.length}</strong> workshops · <strong>${upcoming}</strong> aktiva.`;
+      const doneLabel = done === 1 ? 'avslutad' : 'avslutade';
+      sub.innerHTML = done > 0
+        ? `<strong>${upcoming}</strong> aktiva · <strong>${done}</strong> ${doneLabel}.`
+        : `<strong>${upcoming}</strong> aktiva.`;
     }
   }
 
