@@ -611,6 +611,50 @@
     .save-status { font-size: 0.85rem; color: var(--muted); }
     .save-status.ok { color: #059669; }
 
+    /* ── SESSIONS ── */
+    .session-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      align-items: center;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .session-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.4rem 0.95rem;
+      border-radius: var(--radius-pill);
+      border: 1px solid var(--border-strong);
+      background: var(--surface);
+      color: var(--text);
+      font-size: 0.88rem;
+      font-weight: 500;
+      letter-spacing: -0.005em;
+      cursor: pointer;
+      transition: all .15s;
+      white-space: nowrap;
+      font-family: inherit;
+    }
+    .session-pill:hover { border-color: var(--text); }
+    .session-pill.active { background: var(--text); border-color: var(--text); color: #fff; }
+    .session-pill-date { font-size: 0.78rem; opacity: 0.7; font-variant-numeric: tabular-nums; }
+    .session-pill.active .session-pill-date { opacity: 0.85; }
+    .session-bar-spacer { flex: 1; }
+    .session-manage-btn {
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      font-size: 0.85rem;
+      cursor: pointer;
+      padding: 0.4rem 0.6rem;
+      transition: color .12s;
+      font-family: inherit;
+    }
+    .session-manage-btn:hover { color: var(--text); }
+
     /* ── TIDSPLAN ── */
     .schedule-top {
       display: flex;
@@ -1078,10 +1122,6 @@
           <input type="text" id="note-group" placeholder="T.ex. Nyhetsredaktionen">
         </div>
         <div class="form-group">
-          <label>Datum</label>
-          <input type="date" id="note-date">
-        </div>
-        <div class="form-group">
           <label>Antal deltagare</label>
           <input type="number" id="note-participants" placeholder="12" min="1">
         </div>
@@ -1110,6 +1150,7 @@
 
     <!-- TAB: TIDSPLAN -->
     <div class="tab-panel" id="tab-schedule">
+      <div class="session-bar hidden" id="session-bar"></div>
       <div class="schedule-top">
         <div class="schedule-meta">
           <div class="start-time-wrapper">
@@ -1256,6 +1297,21 @@
   </div>
 </div>
 
+<!-- HANTERA TILLFÄLLEN MODAL -->
+<div class="modal-overlay" id="sessions-modal">
+  <div class="modal">
+    <h2>Hantera tillfällen</h2>
+    <div class="form-group">
+      <div id="sessions-edit-list"></div>
+      <button type="button" class="btn btn-ghost btn-sm" id="sessions-add-btn" style="padding-left:0; margin-top:.25rem;">+ Lägg till tillfälle</button>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" id="sessions-cancel-btn">Avbryt</button>
+      <button class="btn btn-primary" id="sessions-save-btn">Spara</button>
+    </div>
+  </div>
+</div>
+
 <!-- TOAST -->
 <div class="toast hidden" id="toast"></div>
 
@@ -1265,9 +1321,35 @@
   const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
   let currentDelivery = null;
+  let currentSessionId = null;
   let allExercises = [];
   let scheduleBlocks = [];
   let activeFilter = 'Alla';
+
+  function escapeAttr(s) { return String(s || '').replace(/"/g, '&quot;'); }
+
+  async function refreshCurrentDelivery() {
+    const { data } = await sb.from('deliveries')
+      .select('*, delivery_sessions(*)').eq('id', currentDelivery.id).single();
+    if (data) currentDelivery = data;
+  }
+
+  function sortedSessions(delivery) {
+    return (delivery.delivery_sessions || [])
+      .slice().sort((a,b) => (a.sort_order||0) - (b.sort_order||0));
+  }
+
+  async function ensureDefaultSession() {
+    const sessions = sortedSessions(currentDelivery);
+    if (sessions.length === 0) {
+      const { data } = await sb.from('delivery_sessions').insert({
+        delivery_id: currentDelivery.id, sort_order: 0
+      }).select().single();
+      currentDelivery.delivery_sessions = [data];
+      return data.id;
+    }
+    return sessions[0].id;
+  }
 
   // ── TOAST ──
   function showToast(msg, dur = 2500) {
@@ -1482,6 +1564,7 @@
       if (fresh) delivery = fresh;
     }
     currentDelivery = delivery;
+    currentSessionId = null;
     document.getElementById('delivery-view-title').textContent = delivery.title;
     document.getElementById('delivery-view-meta').textContent =
       [delivery.type, delivery.client, delivery.group_name, summarizeSessions(delivery)].filter(Boolean).join(' · ');
@@ -1514,17 +1597,10 @@
   }
 
   // ── BEHOVSANALYS ──
-  function firstSessionDate(delivery) {
-    const s = (delivery.delivery_sessions || [])
-      .filter(x => x.session_date)
-      .sort((a,b) => (a.sort_order||0) - (b.sort_order||0))[0];
-    return s ? s.session_date : '';
-  }
   async function loadNotes() {
     const { data } = await sb.from('delivery_notes').select('*').eq('delivery_id', currentDelivery.id).maybeSingle();
     document.getElementById('note-client').value = currentDelivery.client || '';
     document.getElementById('note-group').value = currentDelivery.group_name || '';
-    document.getElementById('note-date').value = firstSessionDate(currentDelivery);
     document.getElementById('note-participants').value = currentDelivery.participant_count || '';
     document.getElementById('note-purpose').value = data?.purpose || '';
     document.getElementById('note-goals').value = data?.goals || '';
@@ -1538,28 +1614,13 @@
     btn.disabled = true;
     btn.textContent = 'Sparar...';
 
-    const noteDate = document.getElementById('note-date').value || null;
     const deliveryUpdate = {
       client: document.getElementById('note-client').value.trim() || null,
       group_name: document.getElementById('note-group').value.trim() || null,
-      delivery_date: noteDate,
       participant_count: parseInt(document.getElementById('note-participants').value) || null,
     };
     await sb.from('deliveries').update(deliveryUpdate).eq('id', currentDelivery.id);
     Object.assign(currentDelivery, deliveryUpdate);
-
-    const sessions = (currentDelivery.delivery_sessions || []).sort((a,b) => (a.sort_order||0) - (b.sort_order||0));
-    if (sessions.length === 0 && noteDate) {
-      const { data: newSess } = await sb.from('delivery_sessions').insert({
-        delivery_id: currentDelivery.id, session_date: noteDate, sort_order: 0
-      }).select().single();
-      if (newSess) currentDelivery.delivery_sessions = [newSess];
-    } else if (sessions.length > 0) {
-      await sb.from('delivery_sessions')
-        .update({ session_date: noteDate })
-        .eq('id', sessions[0].id);
-      sessions[0].session_date = noteDate;
-    }
 
     const notesData = {
       delivery_id: currentDelivery.id,
@@ -1587,12 +1648,140 @@
   const fieldSaveTimers = {};
 
   async function loadSchedule() {
+    if (!currentSessionId) {
+      currentSessionId = await ensureDefaultSession();
+    } else if (!sortedSessions(currentDelivery).find(s => s.id === currentSessionId)) {
+      currentSessionId = sortedSessions(currentDelivery)[0]?.id || await ensureDefaultSession();
+    }
     const { data } = await sb.from('schedule_blocks').select('*')
-      .eq('delivery_id', currentDelivery.id).order('sort_order');
+      .eq('session_id', currentSessionId).order('sort_order');
     scheduleBlocks = data || [];
     document.getElementById('start-time-input').value = (currentDelivery.start_time || '09:00').slice(0, 5);
+    renderSessionBar();
     renderSchedule();
   }
+
+  function renderSessionBar() {
+    const bar = document.getElementById('session-bar');
+    const sessions = sortedSessions(currentDelivery);
+    bar.innerHTML = '';
+    bar.classList.remove('hidden');
+
+    const months = ['jan','feb','mar','apr','maj','jun','jul','aug','sep','okt','nov','dec'];
+    sessions.forEach((s, i) => {
+      const pill = document.createElement('button');
+      pill.className = 'session-pill' + (s.id === currentSessionId ? ' active' : '');
+      let dateLabel = '';
+      if (s.session_date) {
+        const dt = new Date(s.session_date);
+        dateLabel = `${dt.getDate()} ${months[dt.getMonth()]}`;
+      }
+      const title = s.title || `Tillfälle ${i+1}`;
+      pill.innerHTML = `${escapeHtml(title)}${dateLabel ? ` <span class="session-pill-date">· ${dateLabel}</span>` : ''}`;
+      pill.addEventListener('click', () => switchSession(s.id));
+      bar.appendChild(pill);
+    });
+
+    const spacer = document.createElement('div');
+    spacer.className = 'session-bar-spacer';
+    bar.appendChild(spacer);
+
+    const manageBtn = document.createElement('button');
+    manageBtn.className = 'session-manage-btn';
+    manageBtn.textContent = 'Hantera tillfällen';
+    manageBtn.addEventListener('click', openSessionsModal);
+    bar.appendChild(manageBtn);
+  }
+
+  async function switchSession(id) {
+    if (id === currentSessionId) return;
+    currentSessionId = id;
+    await loadSchedule();
+  }
+
+  function addSessionEditRow(id = '', title = '', date = '') {
+    const list = document.getElementById('sessions-edit-list');
+    const row = document.createElement('div');
+    row.className = 'session-row';
+    row.dataset.sessionId = id;
+    row.innerHTML = `
+      <input type="text" class="session-title" placeholder="Titel (valfritt)" value="${escapeAttr(title)}">
+      <input type="date" class="session-date" value="${date}">
+      <button type="button" class="btn-remove-session" aria-label="Ta bort tillfälle">×</button>
+    `;
+    row.querySelector('.btn-remove-session').addEventListener('click', () => {
+      if (list.children.length > 1) row.remove();
+    });
+    list.appendChild(row);
+  }
+
+  function openSessionsModal() {
+    const list = document.getElementById('sessions-edit-list');
+    list.innerHTML = '';
+    const sessions = sortedSessions(currentDelivery);
+    if (sessions.length === 0) {
+      addSessionEditRow();
+    } else {
+      sessions.forEach(s => addSessionEditRow(s.id, s.title || '', s.session_date || ''));
+    }
+    document.getElementById('sessions-modal').classList.add('open');
+  }
+
+  document.getElementById('sessions-add-btn').addEventListener('click', () => addSessionEditRow());
+  document.getElementById('sessions-cancel-btn').addEventListener('click', () => {
+    document.getElementById('sessions-modal').classList.remove('open');
+  });
+  document.getElementById('sessions-modal').addEventListener('click', e => {
+    if (e.target === e.currentTarget) document.getElementById('sessions-modal').classList.remove('open');
+  });
+
+  document.getElementById('sessions-save-btn').addEventListener('click', async () => {
+    const list = document.getElementById('sessions-edit-list');
+    const original = currentDelivery.delivery_sessions || [];
+    const originalById = new Map(original.map(s => [s.id, s]));
+
+    const edited = [];
+    list.querySelectorAll('.session-row').forEach((row, i) => {
+      const id = row.dataset.sessionId || null;
+      const title = row.querySelector('.session-title').value.trim() || null;
+      const date = row.querySelector('.session-date').value || null;
+      edited.push({ id, title, session_date: date, sort_order: i });
+    });
+
+    if (edited.length === 0) {
+      edited.push({ id: null, title: null, session_date: null, sort_order: 0 });
+    }
+
+    const editedIds = new Set(edited.filter(e => e.id).map(e => e.id));
+    const toDelete = original.filter(s => !editedIds.has(s.id));
+    if (toDelete.length > 0) {
+      if (!confirm(`Ta bort ${toDelete.length} tillfälle(n)? Block i dem försvinner också.`)) return;
+      await sb.from('delivery_sessions').delete().in('id', toDelete.map(s => s.id));
+    }
+
+    for (const e of edited) {
+      if (e.id) {
+        const orig = originalById.get(e.id);
+        if (orig.title !== e.title || orig.session_date !== e.session_date || (orig.sort_order||0) !== e.sort_order) {
+          await sb.from('delivery_sessions').update({
+            title: e.title, session_date: e.session_date, sort_order: e.sort_order
+          }).eq('id', e.id);
+        }
+      } else {
+        await sb.from('delivery_sessions').insert({
+          delivery_id: currentDelivery.id,
+          title: e.title, session_date: e.session_date, sort_order: e.sort_order
+        });
+      }
+    }
+
+    document.getElementById('sessions-modal').classList.remove('open');
+    await refreshCurrentDelivery();
+    document.getElementById('delivery-view-meta').textContent =
+      [currentDelivery.type, currentDelivery.client, currentDelivery.group_name, summarizeSessions(currentDelivery)].filter(Boolean).join(' · ');
+    await loadSchedule();
+    showToast('Tillfällen sparade.');
+  });
 
   function parseStartTime() {
     const v = document.getElementById('start-time-input').value || '09:00';
@@ -1778,6 +1967,7 @@
   document.getElementById('add-buffer-btn').addEventListener('click', async () => {
     const block = {
       delivery_id: currentDelivery.id,
+      session_id: currentSessionId,
       block_type: 'Buffer',
       title: 'Buffertid',
       duration_minutes: 10,
@@ -1796,6 +1986,7 @@
     if (!title) { showToast('Ange en titel för blocket.'); return; }
     const block = {
       delivery_id: currentDelivery.id,
+      session_id: currentSessionId,
       block_type: document.getElementById('new-block-type').value,
       title,
       duration_minutes: parseInt(document.getElementById('new-block-duration').value) || 30,
@@ -1906,6 +2097,7 @@
     if (!ex || !currentDelivery) return;
     const block = {
       delivery_id: currentDelivery.id,
+      session_id: currentSessionId,
       block_type: ex.exercise_type === 'Icebreaker' ? 'Upplevelseövning' : ex.exercise_type === 'Fördjupning' ? 'Teori' : ex.exercise_type,
       title: ex.name,
       duration_minutes: ex.duration_minutes,
