@@ -78,7 +78,8 @@
       text-transform: uppercase;
       letter-spacing: 0.04em;
     }
-    .login-card input[type="email"] {
+    .login-card input[type="email"],
+    .login-card input[type="password"] {
       width: 100%;
       padding: 0.75rem 1rem;
       border: 1.5px solid var(--border);
@@ -88,7 +89,8 @@
       transition: border-color .15s;
       margin-bottom: 1rem;
     }
-    .login-card input[type="email"]:focus { border-color: var(--accent); }
+    .login-card input[type="email"]:focus,
+    .login-card input[type="password"]:focus { border-color: var(--accent); }
     .login-status {
       margin-top: 1rem;
       font-size: 0.9rem;
@@ -525,11 +527,25 @@
 </head>
 <body>
 
+<!-- LOGIN -->
+<div id="login-view" class="hidden">
+  <div class="login-card">
+    <div class="login-logo">SVT <span>Workshop</span> Studio</div>
+    <p class="login-tagline">Ange lösenord för att fortsätta</p>
+    <label for="login-pw">Lösenord</label>
+    <input type="password" id="login-pw" autocomplete="current-password" autofocus>
+    <button class="btn btn-primary" id="login-btn" style="width:100%; margin-top:1rem;">Logga in</button>
+    <p class="login-status" id="login-status"></p>
+  </div>
+</div>
+
 <!-- DASHBOARD -->
 <div id="dashboard-view" class="hidden">
   <header class="app-header">
     <div class="app-logo">SVT <span>Workshop</span> Studio</div>
-    <div class="header-right"></div>
+    <div class="header-right">
+      <button class="btn btn-ghost btn-sm" id="logout-btn">Logga ut</button>
+    </div>
   </header>
   <main class="dashboard-content">
     <div class="dashboard-top">
@@ -753,10 +769,42 @@
 
   // ── VIEWS ──
   function showView(id) {
-    ['dashboard-view','delivery-view'].forEach(v =>
+    ['login-view','dashboard-view','delivery-view'].forEach(v =>
       document.getElementById(v).classList.add('hidden'));
     document.getElementById(id).classList.remove('hidden');
   }
+
+  // ── PASSWORD GATE ──
+  const PW_HASH = '00c219833022fcdbe9a6b6c99b6156eef95248e6a0db37e4a01c4e9f85e9cd35';
+  async function sha256(s) {
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s));
+    return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2,'0')).join('');
+  }
+  async function tryLogin() {
+    const pw = document.getElementById('login-pw').value;
+    const status = document.getElementById('login-status');
+    const hash = await sha256(pw);
+    if (hash === PW_HASH) {
+      localStorage.setItem('svt_authed', '1');
+      status.textContent = '';
+      showView('dashboard-view');
+      loadDeliveries();
+    } else {
+      status.textContent = 'Fel lösenord. Försök igen.';
+      status.className = 'login-status err';
+      document.getElementById('login-pw').select();
+    }
+  }
+  document.getElementById('login-btn').addEventListener('click', tryLogin);
+  document.getElementById('login-pw').addEventListener('keydown', e => {
+    if (e.key === 'Enter') tryLogin();
+  });
+  document.getElementById('logout-btn').addEventListener('click', () => {
+    localStorage.removeItem('svt_authed');
+    document.getElementById('login-pw').value = '';
+    showView('login-view');
+    setTimeout(() => document.getElementById('login-pw').focus(), 50);
+  });
 
   // ── DELIVERIES ──
   async function loadDeliveries() {
@@ -1262,8 +1310,13 @@
   }
 
   // ── INIT ──
-  showView('dashboard-view');
-  loadDeliveries();
+  if (localStorage.getItem('svt_authed') === '1') {
+    showView('dashboard-view');
+    loadDeliveries();
+  } else {
+    showView('login-view');
+    setTimeout(() => document.getElementById('login-pw').focus(), 50);
+  }
 </script>
 </body>
 </html>
