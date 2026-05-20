@@ -538,9 +538,9 @@
     </div>
 
     <div id="login-step-code" class="hidden">
-      <p style="margin:0 0 12px 0; color:#6B7280; font-size:14px;">Vi har skickat en 6-siffrig kod till <strong id="login-code-email"></strong>. Skriv in den nedan.</p>
+      <p style="margin:0 0 12px 0; color:#6B7280; font-size:14px;">Vi har skickat en inloggningskod till <strong id="login-code-email"></strong>. Skriv in den nedan.</p>
       <label for="login-code">Inloggningskod</label>
-      <input type="text" id="login-code" placeholder="123456" inputmode="numeric" autocomplete="one-time-code" maxlength="6" style="letter-spacing:4px; font-size:20px; text-align:center;">
+      <input type="text" id="login-code" placeholder="12345678" inputmode="numeric" autocomplete="one-time-code" maxlength="8" style="letter-spacing:4px; font-size:20px; text-align:center;">
       <button class="btn btn-primary" id="verify-btn" style="width:100%">Logga in</button>
       <button class="btn btn-ghost btn-sm" id="login-back-btn" style="width:100%; margin-top:8px;">← Använd annan e-post</button>
     </div>
@@ -819,7 +819,7 @@
     const code = document.getElementById('login-code').value.trim();
     const status = document.getElementById('login-status');
     const btn = document.getElementById('verify-btn');
-    if (!code || code.length < 6) { status.textContent = 'Skriv in 6-siffriga koden från mailet.'; status.className = 'login-status err'; return; }
+    if (!code || code.length < 6) { status.textContent = 'Skriv in koden från mailet.'; status.className = 'login-status err'; return; }
     if (!pendingLoginEmail) { status.textContent = 'Något gick fel — gå tillbaka och försök igen.'; status.className = 'login-status err'; return; }
     btn.disabled = true;
     btn.innerHTML = '<span class="spinner"></span> Verifierar...';
