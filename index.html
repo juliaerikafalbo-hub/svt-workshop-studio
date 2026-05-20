@@ -530,9 +530,21 @@
   <div class="login-card">
     <div class="login-logo">SVT <span>Workshop</span> Studio</div>
     <p class="login-tagline">Planera, leverera och följ upp dina workshops</p>
-    <label for="login-email">Din e-postadress</label>
-    <input type="email" id="login-email" placeholder="julia@svt.se" autocomplete="email">
-    <button class="btn btn-primary" id="login-btn" style="width:100%">Skicka inloggningslänk</button>
+
+    <div id="login-step-email">
+      <label for="login-email">Din e-postadress</label>
+      <input type="email" id="login-email" placeholder="julia@svt.se" autocomplete="email">
+      <button class="btn btn-primary" id="login-btn" style="width:100%">Skicka inloggningskod</button>
+    </div>
+
+    <div id="login-step-code" class="hidden">
+      <p style="margin:0 0 12px 0; color:#6B7280; font-size:14px;">Vi har skickat en 6-siffrig kod till <strong id="login-code-email"></strong>. Skriv in den nedan.</p>
+      <label for="login-code">Inloggningskod</label>
+      <input type="text" id="login-code" placeholder="123456" inputmode="numeric" autocomplete="one-time-code" maxlength="6" style="letter-spacing:4px; font-size:20px; text-align:center;">
+      <button class="btn btn-primary" id="verify-btn" style="width:100%">Logga in</button>
+      <button class="btn btn-ghost btn-sm" id="login-back-btn" style="width:100%; margin-top:8px;">← Använd annan e-post</button>
+    </div>
+
     <p class="login-status" id="login-status"></p>
   </div>
 </div>
@@ -775,6 +787,8 @@
   }
 
   // ── AUTH ──
+  let pendingLoginEmail = null;
+
   document.getElementById('login-btn').addEventListener('click', async () => {
     const email = document.getElementById('login-email').value.trim();
     const status = document.getElementById('login-status');
@@ -784,21 +798,59 @@
     btn.innerHTML = '<span class="spinner"></span> Skickar...';
     const { error } = await sb.auth.signInWithOtp({
       email,
-      options: { emailRedirectTo: window.location.href }
+      options: { shouldCreateUser: true }
     });
     btn.disabled = false;
-    btn.textContent = 'Skicka inloggningslänk';
+    btn.textContent = 'Skicka inloggningskod';
     if (error) {
-      status.textContent = 'Något gick fel. Försök igen.';
+      status.textContent = 'Något gick fel: ' + error.message;
       status.className = 'login-status err';
     } else {
-      status.textContent = '✓ Kolla din e-post! Klicka på länken för att logga in.';
-      status.className = 'login-status ok';
+      pendingLoginEmail = email;
+      document.getElementById('login-code-email').textContent = email;
+      document.getElementById('login-step-email').classList.add('hidden');
+      document.getElementById('login-step-code').classList.remove('hidden');
+      status.textContent = '';
+      setTimeout(() => document.getElementById('login-code').focus(), 50);
     }
+  });
+
+  document.getElementById('verify-btn').addEventListener('click', async () => {
+    const code = document.getElementById('login-code').value.trim();
+    const status = document.getElementById('login-status');
+    const btn = document.getElementById('verify-btn');
+    if (!code || code.length < 6) { status.textContent = 'Skriv in 6-siffriga koden från mailet.'; status.className = 'login-status err'; return; }
+    if (!pendingLoginEmail) { status.textContent = 'Något gick fel — gå tillbaka och försök igen.'; status.className = 'login-status err'; return; }
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> Verifierar...';
+    const { error } = await sb.auth.verifyOtp({
+      email: pendingLoginEmail,
+      token: code,
+      type: 'email'
+    });
+    btn.disabled = false;
+    btn.textContent = 'Logga in';
+    if (error) {
+      status.textContent = 'Koden stämmer inte eller är utgången. Försök igen.';
+      status.className = 'login-status err';
+    } else {
+      status.textContent = '';
+    }
+  });
+
+  document.getElementById('login-back-btn').addEventListener('click', () => {
+    pendingLoginEmail = null;
+    document.getElementById('login-code').value = '';
+    document.getElementById('login-status').textContent = '';
+    document.getElementById('login-step-code').classList.add('hidden');
+    document.getElementById('login-step-email').classList.remove('hidden');
   });
 
   document.getElementById('login-email').addEventListener('keydown', e => {
     if (e.key === 'Enter') document.getElementById('login-btn').click();
+  });
+  document.getElementById('login-code').addEventListener('keydown', e => {
+    if (e.key === 'Enter') document.getElementById('verify-btn').click();
   });
 
   document.getElementById('logout-btn').addEventListener('click', async () => {
