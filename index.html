@@ -490,7 +490,7 @@
 
     .session-row {
       display: grid;
-      grid-template-columns: 1fr 160px 32px;
+      grid-template-columns: 24px 1fr 160px 32px;
       gap: 0.5rem;
       margin-bottom: 0.5rem;
       align-items: center;
@@ -500,6 +500,24 @@
       font-size: 0.92rem !important;
       margin-bottom: 0 !important;
     }
+    .session-row-handle {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+    }
+    .session-move-btn {
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      color: var(--muted);
+      font-size: 0.7rem;
+      padding: 1px 4px;
+      border-radius: 3px;
+      line-height: 1;
+      font-family: inherit;
+    }
+    .session-move-btn:hover:not(:disabled) { color: var(--text); background: var(--surface-alt); }
+    .session-move-btn:disabled { opacity: 0.25; cursor: not-allowed; }
     .btn-remove-session {
       background: transparent;
       border: 1px solid var(--border);
@@ -518,8 +536,8 @@
     .btn-remove-session:hover { color: #DC2626; border-color: #DC2626; background: #FEF2F2; }
     .btn-remove-session:disabled { opacity: 0.3; cursor: not-allowed; }
     @media (max-width: 540px) {
-      .session-row { grid-template-columns: 1fr; gap: 0.4rem; }
-      .btn-remove-session { justify-self: end; }
+      .session-row { grid-template-columns: 24px 1fr 32px; gap: 0.4rem; }
+      .session-row .session-date { grid-column: 2 / 4; }
     }
 
     /* ── DELIVERY VIEW ── */
@@ -1440,21 +1458,21 @@
       const row = document.createElement('div');
       row.className = 'delivery-row anim-fadeup';
       row.style.animationDelay = (0.1 + i * 0.05) + 's';
-      const metaParts = [d.type, d.client, d.group_name].filter(Boolean);
+      const sessionsAll = d.delivery_sessions || [];
+      const sessionLabel = d.type === 'Utbildning' ? 'moduler' : 'tillfällen';
+      const countMeta = sessionsAll.length > 1 ? `${sessionsAll.length} ${sessionLabel}` : null;
+      const metaParts = [d.type, countMeta, d.client, d.group_name].filter(Boolean);
       const meta = metaParts.join(' · ');
-      const sessions = (d.delivery_sessions || [])
+      const sessions = sessionsAll
         .filter(s => s.session_date)
         .sort((a,b) => new Date(a.session_date) - new Date(b.session_date));
       let dateBlock = '<div class="row-date" style="opacity:0"></div>';
       if (sessions.length > 0) {
         const dt = new Date(sessions[0].session_date);
-        const extra = sessions.length > 1
-          ? `<span class="row-date-more">+${sessions.length - 1}</span>` : '';
         dateBlock = `
           <div class="row-date">
             <span class="row-date-day">${dt.getDate()}</span>
             <span class="row-date-month">${months[dt.getMonth()]}</span>
-            ${extra}
           </div>`;
       }
       row.innerHTML = `
@@ -1477,19 +1495,50 @@
     return d.toLocaleDateString('sv-SE', { day: 'numeric', month: 'long', year: 'numeric' });
   }
 
-  function addSessionRow(title = '', date = '') {
-    const list = document.getElementById('sessions-list');
+  function refreshMoveButtons(list) {
+    Array.from(list.children).forEach((row, i, arr) => {
+      const up = row.querySelector('.session-move-btn[data-dir="-1"]');
+      const down = row.querySelector('.session-move-btn[data-dir="1"]');
+      if (up) up.disabled = i === 0;
+      if (down) down.disabled = i === arr.length - 1;
+    });
+  }
+  function moveSessionRow(row, dir) {
+    const list = row.parentElement;
+    const idx = Array.from(list.children).indexOf(row);
+    const newIdx = idx + dir;
+    if (newIdx < 0 || newIdx >= list.children.length) return;
+    if (dir < 0) list.insertBefore(row, list.children[newIdx]);
+    else list.insertBefore(row, list.children[newIdx].nextSibling);
+    refreshMoveButtons(list);
+  }
+  function buildSessionRow({ id = '', title = '', date = '', listEl }) {
     const row = document.createElement('div');
     row.className = 'session-row';
+    if (id) row.dataset.sessionId = id;
     row.innerHTML = `
-      <input type="text" class="session-title" placeholder="Titel (valfritt, t.ex. Modul 1)" value="${title.replace(/"/g, '&quot;')}">
+      <div class="session-row-handle">
+        <button type="button" class="session-move-btn" data-dir="-1" title="Flytta upp">↑</button>
+        <button type="button" class="session-move-btn" data-dir="1" title="Flytta ner">↓</button>
+      </div>
+      <input type="text" class="session-title" placeholder="Titel (valfritt, t.ex. Modul 1)" value="${escapeAttr(title)}">
       <input type="date" class="session-date" value="${date}">
       <button type="button" class="btn-remove-session" aria-label="Ta bort tillfälle">×</button>
     `;
+    row.querySelector('[data-dir="-1"]').addEventListener('click', () => moveSessionRow(row, -1));
+    row.querySelector('[data-dir="1"]').addEventListener('click', () => moveSessionRow(row, 1));
     row.querySelector('.btn-remove-session').addEventListener('click', () => {
-      if (list.children.length > 1) row.remove();
+      if (listEl.children.length > 1) {
+        row.remove();
+        refreshMoveButtons(listEl);
+      }
     });
-    list.appendChild(row);
+    listEl.appendChild(row);
+    refreshMoveButtons(listEl);
+  }
+
+  function addSessionRow(title = '', date = '') {
+    buildSessionRow({ title, date, listEl: document.getElementById('sessions-list') });
   }
   function openNewDeliveryModal() {
     document.getElementById('new-delivery-modal').classList.add('open');
@@ -1700,19 +1749,7 @@
   }
 
   function addSessionEditRow(id = '', title = '', date = '') {
-    const list = document.getElementById('sessions-edit-list');
-    const row = document.createElement('div');
-    row.className = 'session-row';
-    row.dataset.sessionId = id;
-    row.innerHTML = `
-      <input type="text" class="session-title" placeholder="Titel (valfritt)" value="${escapeAttr(title)}">
-      <input type="date" class="session-date" value="${date}">
-      <button type="button" class="btn-remove-session" aria-label="Ta bort tillfälle">×</button>
-    `;
-    row.querySelector('.btn-remove-session').addEventListener('click', () => {
-      if (list.children.length > 1) row.remove();
-    });
-    list.appendChild(row);
+    buildSessionRow({ id, title, date, listEl: document.getElementById('sessions-edit-list') });
   }
 
   function openSessionsModal() {
