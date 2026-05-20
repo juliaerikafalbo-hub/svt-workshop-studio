@@ -10,31 +10,64 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg: #F8FAFC;
+      --bg: #FFFFFF;
       --surface: #FFFFFF;
-      --border: #E2E8F0;
-      --text: #0F172A;
-      --muted: #64748B;
-      --accent: #2563EB;
-      --accent-hover: #1D4ED8;
-      --accent-light: #EFF6FF;
-      --radius: 10px;
-      --shadow: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.04);
-      --shadow-md: 0 4px 16px rgba(0,0,0,.10);
-      --teori: #3B82F6;
+      --surface-alt: #FBFBFD;
+      --border: #E5E5EA;
+      --border-strong: #D2D2D7;
+      --text: #1D1D1F;
+      --muted: #6E6E73;
+      --accent: #0071E3;
+      --accent-hover: #0077ED;
+      --accent-light: #F2F8FF;
+      --radius: 12px;
+      --radius-sm: 8px;
+      --radius-pill: 980px;
+      --shadow: 0 1px 3px rgba(0,0,0,.06);
+      --shadow-md: 0 6px 24px rgba(0,0,0,.08);
+      --teori: #0071E3;
       --reflektion: #7C3AED;
       --grupparbete: #059669;
       --upplevelse: #D97706;
       --paus: #94A3B8;
+      --status-planering: #C28A00;
+      --status-pagaende: #00875A;
+      --status-avslutad: #86868B;
     }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Segoe UI', Helvetica, Arial, sans-serif;
+      font-feature-settings: 'kern', 'ss01';
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
       background: var(--bg);
       color: var(--text);
       min-height: 100vh;
-      font-size: 15px;
+      font-size: 16px;
       line-height: 1.5;
+    }
+
+    /* ── TYPOGRAPHY UTILITIES ── */
+    .display-1 {
+      font-size: clamp(2.5rem, 6vw, 4rem);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.05;
+      color: var(--text);
+    }
+    .display-2 {
+      font-size: clamp(1.75rem, 3.5vw, 2.5rem);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+      color: var(--text);
+    }
+    .display-sub {
+      font-size: clamp(1rem, 1.6vw, 1.25rem);
+      color: var(--muted);
+      letter-spacing: -0.01em;
+      font-weight: 400;
+      margin-top: 0.5rem;
     }
 
     /* ── LOGIN ── */
@@ -43,61 +76,64 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 1rem;
+      padding: 2rem 1.5rem;
     }
     .login-card {
       background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 2.5rem;
+      padding: 0;
       width: 100%;
-      max-width: 420px;
-      box-shadow: var(--shadow-md);
-      text-align: center;
+      max-width: 380px;
+      text-align: left;
     }
     .login-logo {
-      font-size: 1.6rem;
+      font-size: clamp(2.25rem, 5vw, 3rem);
       font-weight: 700;
-      letter-spacing: -0.5px;
-      margin-bottom: 0.25rem;
+      letter-spacing: -0.025em;
+      line-height: 1.05;
+      margin-bottom: 0.5rem;
       color: var(--text);
     }
-    .login-logo span { color: var(--accent); }
+    .login-logo span { color: var(--text); font-weight: 400; }
     .login-tagline {
       color: var(--muted);
-      font-size: 0.9rem;
-      margin-bottom: 2rem;
+      font-size: 1rem;
+      letter-spacing: -0.005em;
+      margin-bottom: 2.5rem;
     }
     .login-card label {
       display: block;
-      text-align: left;
-      font-size: 0.85rem;
-      font-weight: 600;
-      margin-bottom: 0.4rem;
+      font-size: 0.78rem;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
       color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
+      letter-spacing: 0.02em;
     }
     .login-card input[type="email"],
     .login-card input[type="password"] {
       width: 100%;
-      padding: 0.75rem 1rem;
-      border: 1.5px solid var(--border);
+      padding: 0.85rem 1rem;
+      border: 1px solid var(--border-strong);
       border-radius: var(--radius);
       font-size: 1rem;
+      font-family: inherit;
       outline: none;
-      transition: border-color .15s;
-      margin-bottom: 1rem;
+      transition: border-color .15s, box-shadow .15s;
+      margin-bottom: 0;
+      background: var(--surface);
+      color: var(--text);
     }
     .login-card input[type="email"]:focus,
-    .login-card input[type="password"]:focus { border-color: var(--accent); }
+    .login-card input[type="password"]:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px var(--accent-light);
+    }
     .login-status {
       margin-top: 1rem;
       font-size: 0.9rem;
       color: var(--muted);
       min-height: 1.4rem;
     }
-    .login-status.ok { color: #059669; }
+    .login-status.ok { color: var(--status-pagaende); }
     .login-status.err { color: #DC2626; }
 
     /* ── SHARED COMPONENTS ── */
@@ -105,32 +141,37 @@
       display: inline-flex;
       align-items: center;
       gap: 0.4rem;
-      padding: 0.65rem 1.25rem;
+      padding: 0.65rem 1.4rem;
       border: none;
-      border-radius: var(--radius);
-      font-size: 0.9rem;
-      font-weight: 600;
+      border-radius: var(--radius-pill);
+      font-size: 0.92rem;
+      font-weight: 500;
+      letter-spacing: -0.01em;
       cursor: pointer;
-      transition: background .15s, opacity .15s;
+      transition: background .15s, transform .15s, opacity .15s;
       text-decoration: none;
+      -webkit-tap-highlight-color: transparent;
     }
     .btn-primary { background: var(--accent); color: #fff; }
     .btn-primary:hover { background: var(--accent-hover); }
-    .btn-secondary { background: var(--surface); color: var(--text); border: 1.5px solid var(--border); }
-    .btn-secondary:hover { background: var(--bg); }
-    .btn-ghost { background: transparent; color: var(--muted); }
-    .btn-ghost:hover { background: var(--bg); color: var(--text); }
-    .btn-danger { background: #FEE2E2; color: #DC2626; }
-    .btn-danger:hover { background: #FECACA; }
-    .btn-sm { padding: 0.4rem 0.8rem; font-size: 0.82rem; }
-    .btn:disabled { opacity: .5; cursor: not-allowed; }
+    .btn-primary:active { transform: scale(0.98); }
+    .btn-secondary { background: var(--surface); color: var(--text); border: 1px solid var(--border-strong); }
+    .btn-secondary:hover { background: var(--surface-alt); }
+    .btn-ghost { background: transparent; color: var(--accent); padding-left: 0.4rem; padding-right: 0.4rem; }
+    .btn-ghost:hover { color: var(--accent-hover); background: transparent; }
+    .btn-danger { background: transparent; color: #DC2626; }
+    .btn-danger:hover { background: #FEF2F2; }
+    .btn-sm { padding: 0.4rem 1rem; font-size: 0.85rem; }
+    .btn:disabled { opacity: .4; cursor: not-allowed; }
 
     /* ── APP HEADER ── */
     .app-header {
-      background: var(--surface);
+      background: rgba(255,255,255,.85);
+      backdrop-filter: saturate(180%) blur(20px);
+      -webkit-backdrop-filter: saturate(180%) blur(20px);
       border-bottom: 1px solid var(--border);
       padding: 0 1.5rem;
-      height: 56px;
+      height: 52px;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -139,70 +180,113 @@
       z-index: 10;
     }
     .app-logo {
-      font-size: 1.1rem;
-      font-weight: 700;
-      letter-spacing: -0.3px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      color: var(--text);
     }
-    .app-logo span { color: var(--accent); }
+    .app-logo span { color: var(--text); font-weight: 400; }
     .header-right {
       display: flex;
       align-items: center;
-      gap: 0.75rem;
+      gap: 0.5rem;
     }
     .user-email {
       font-size: 0.82rem;
       color: var(--muted);
     }
+    #logout-btn {
+      color: var(--muted);
+      font-size: 0.85rem;
+      font-weight: 400;
+    }
+    #logout-btn:hover { color: var(--text); }
 
     /* ── DASHBOARD ── */
     .dashboard-content {
-      max-width: 1000px;
+      max-width: 760px;
       margin: 0 auto;
-      padding: 2rem 1.5rem;
+      padding: clamp(2.5rem, 6vw, 5rem) 1.5rem 6rem;
     }
-    .dashboard-top {
+    .dashboard-hero {
+      margin-bottom: 3rem;
+    }
+    .dashboard-hero h1 { /* uses .display-1 */ }
+    .dashboard-actions {
       display: flex;
       justify-content: space-between;
-      align-items: center;
-      margin-bottom: 1.75rem;
+      align-items: baseline;
+      margin-bottom: 1.25rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid var(--border);
     }
-    .dashboard-top h1 { font-size: 1.5rem; font-weight: 700; }
-    .deliveries-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 1rem;
-    }
-    .delivery-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 1.25rem;
-      box-shadow: var(--shadow);
-      cursor: pointer;
-      transition: box-shadow .15s, border-color .15s;
-    }
-    .delivery-card:hover { box-shadow: var(--shadow-md); border-color: #CBD5E1; }
-    .card-status {
-      display: inline-block;
-      font-size: 0.72rem;
-      font-weight: 700;
-      letter-spacing: 0.05em;
+    .dashboard-actions h2 {
+      font-size: 0.78rem;
+      font-weight: 600;
       text-transform: uppercase;
-      padding: 0.2rem 0.5rem;
-      border-radius: 20px;
-      margin-bottom: 0.75rem;
+      letter-spacing: 0.08em;
+      color: var(--muted);
     }
-    .status-Planering { background: #FEF9C3; color: #854D0E; }
-    .status-Pågående { background: #DCFCE7; color: #166534; }
-    .status-Avslutad { background: #F1F5F9; color: #64748B; }
-    .card-title { font-size: 1.05rem; font-weight: 700; margin-bottom: 0.25rem; }
-    .card-meta { font-size: 0.85rem; color: var(--muted); }
+    .deliveries-list {
+      display: flex;
+      flex-direction: column;
+    }
+    .delivery-row {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 1rem;
+      align-items: center;
+      padding: 1.1rem 0.25rem;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      transition: background .12s;
+    }
+    .delivery-row:hover { background: var(--surface-alt); }
+    .delivery-row:hover .row-chevron { opacity: 1; transform: translateX(2px); }
+    .row-status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--status-avslutad);
+      flex-shrink: 0;
+    }
+    .row-status-dot.status-Planering { background: var(--status-planering); }
+    .row-status-dot.status-Pågående { background: var(--status-pagaende); }
+    .row-status-dot.status-Avslutad { background: var(--status-avslutad); }
+    .row-content { min-width: 0; }
+    .row-title {
+      font-size: 1.05rem;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      color: var(--text);
+      margin-bottom: 0.15rem;
+    }
+    .row-meta {
+      font-size: 0.88rem;
+      color: var(--muted);
+      letter-spacing: -0.005em;
+    }
+    .row-right {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-size: 0.88rem;
+      color: var(--muted);
+      font-variant-numeric: tabular-nums;
+    }
+    .row-chevron {
+      color: var(--border-strong);
+      font-size: 1.2rem;
+      line-height: 1;
+      opacity: 0.5;
+      transition: opacity .12s, transform .12s;
+    }
     .empty-state {
       text-align: center;
       padding: 4rem 1rem;
       color: var(--muted);
     }
-    .empty-state p { margin-bottom: 1.25rem; font-size: 1.05rem; }
+    .empty-state p { margin-bottom: 1.5rem; font-size: 1.05rem; }
 
     /* ── MODAL ── */
     .modal-overlay {
@@ -329,44 +413,212 @@
     .schedule-top {
       display: flex;
       justify-content: space-between;
-      align-items: flex-start;
+      align-items: center;
       margin-bottom: 1.25rem;
       flex-wrap: wrap;
       gap: 1rem;
     }
+    .schedule-meta {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .start-time-wrapper {
+      display: flex;
+      align-items: center;
+      gap: .6rem;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: .45rem .85rem;
+    }
+    .start-time-wrapper label {
+      font-size: .75rem;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .05em;
+    }
+    .start-time-wrapper input {
+      border: none;
+      outline: none;
+      font-size: 1rem;
+      font-weight: 700;
+      font-family: inherit;
+      color: var(--text);
+      background: transparent;
+      width: 80px;
+      font-variant-numeric: tabular-nums;
+    }
     .time-summary {
       background: var(--accent-light);
       border-radius: var(--radius);
-      padding: 0.75rem 1.25rem;
-      font-size: 0.9rem;
+      padding: .55rem 1rem;
+      font-size: .9rem;
     }
     .time-summary strong { color: var(--accent); }
     .balance-bar {
       display: flex;
-      height: 8px;
+      height: 6px;
       border-radius: 4px;
       overflow: hidden;
-      margin-top: 0.5rem;
+      margin-top: .4rem;
       gap: 2px;
     }
     .balance-segment { height: 100%; transition: width .3s; }
+    .schedule-actions { display: flex; gap: .5rem; flex-wrap: wrap; }
 
-    .block-list { display: flex; flex-direction: column; gap: 0.6rem; }
-    .block-item {
+    /* Tabellayout för tidsblock (à la SessionLab) */
+    .schedule-table {
       background: var(--surface);
       border: 1.5px solid var(--border);
-      border-left: 4px solid var(--border);
       border-radius: var(--radius);
-      padding: 0.9rem 1rem;
-      display: flex;
-      align-items: center;
-      gap: 1rem;
+      overflow: hidden;
     }
-    .block-item[data-type="Teori"] { border-left-color: var(--teori); }
-    .block-item[data-type="Reflektion"] { border-left-color: var(--reflektion); }
-    .block-item[data-type="Grupparbete"] { border-left-color: var(--grupparbete); }
-    .block-item[data-type="Upplevelseövning"] { border-left-color: var(--upplevelse); }
-    .block-item[data-type="Paus"] { border-left-color: var(--paus); }
+    .schedule-head {
+      display: grid;
+      grid-template-columns: 120px 1.1fr 1fr 80px;
+      background: #F8FAFC;
+      border-bottom: 1.5px solid var(--border);
+      font-size: .7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--muted);
+    }
+    .schedule-head > div { padding: .7rem 1rem; }
+    .schedule-row {
+      display: grid;
+      grid-template-columns: 120px 1.1fr 1fr 80px;
+      border-bottom: 1px solid var(--border);
+      border-left: 4px solid var(--border);
+      background: var(--surface);
+      transition: background .12s;
+    }
+    .schedule-row:last-child { border-bottom: none; }
+    .schedule-row:hover { background: #FAFBFC; }
+    .schedule-row[data-type="Teori"] { border-left-color: var(--teori); }
+    .schedule-row[data-type="Reflektion"] { border-left-color: var(--reflektion); }
+    .schedule-row[data-type="Grupparbete"] { border-left-color: var(--grupparbete); }
+    .schedule-row[data-type="Upplevelseövning"] { border-left-color: var(--upplevelse); }
+    .schedule-row[data-type="Paus"] { border-left-color: var(--paus); }
+    .schedule-row[data-type="Buffer"] {
+      border-left: 4px dashed #CBD5E1;
+      background: #FAFBFC;
+    }
+
+    .cell { padding: .9rem 1rem; }
+    .cell-time { display: flex; flex-direction: column; gap: .3rem; }
+    .clock-time {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -.01em;
+    }
+    .duration-row { display: flex; align-items: center; gap: .15rem; font-size: .82rem; color: var(--muted); }
+    .duration-input {
+      border: none;
+      outline: none;
+      background: transparent;
+      font-size: .82rem;
+      font-weight: 700;
+      color: var(--muted);
+      width: 32px;
+      font-family: inherit;
+      padding: 0;
+      border-radius: 3px;
+      -moz-appearance: textfield;
+    }
+    .duration-input::-webkit-outer-spin-button,
+    .duration-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    .duration-input:focus { background: #F1F5F9; color: var(--text); }
+    .type-select {
+      margin-top: .15rem;
+      font-size: .65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      padding: .2rem .45rem;
+      border-radius: 4px;
+      border: none;
+      outline: none;
+      cursor: pointer;
+      font-family: inherit;
+      background: #F1F5F9;
+      color: var(--muted);
+      align-self: flex-start;
+      appearance: none;
+      -webkit-appearance: none;
+      padding-right: 1.1rem;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 8 8'%3E%3Cpath fill='%2364748B' d='M4 6L0 1h8z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right .35rem center;
+    }
+    .type-select[data-type="Teori"] { background-color: #DBEAFE; color: #1D4ED8; }
+    .type-select[data-type="Reflektion"] { background-color: #EDE9FE; color: #5B21B6; }
+    .type-select[data-type="Grupparbete"] { background-color: #D1FAE5; color: #065F46; }
+    .type-select[data-type="Upplevelseövning"] { background-color: #FEF3C7; color: #92400E; }
+    .type-select[data-type="Paus"] { background-color: #F1F5F9; color: #475569; }
+    .type-select[data-type="Buffer"] { background-color: #F8FAFC; color: #94A3B8; }
+
+    .cell-content { display: flex; flex-direction: column; gap: .35rem; }
+    .block-title-edit {
+      font-size: .98rem;
+      font-weight: 600;
+      color: var(--text);
+      outline: none;
+      border-radius: 4px;
+      padding: .2rem .4rem;
+      margin: -.2rem -.4rem;
+      transition: background .12s;
+      min-height: 1.4em;
+    }
+    .block-title-edit:focus { background: #F1F5F9; }
+    .block-title-edit:empty::before {
+      content: attr(data-placeholder);
+      color: #CBD5E1;
+      font-weight: 400;
+    }
+    .block-desc-edit, .block-material-edit {
+      font-size: .87rem;
+      color: var(--muted);
+      outline: none;
+      border-radius: 4px;
+      padding: .2rem .4rem;
+      margin: -.2rem -.4rem;
+      white-space: pre-wrap;
+      line-height: 1.5;
+      transition: background .12s, color .12s;
+      min-height: 1.4em;
+    }
+    .block-desc-edit:focus, .block-material-edit:focus { background: #F1F5F9; color: var(--text); }
+    .block-desc-edit:empty::before, .block-material-edit:empty::before {
+      content: attr(data-placeholder);
+      color: #CBD5E1;
+    }
+
+    .cell-actions {
+      display: flex;
+      align-items: flex-start;
+      justify-content: flex-end;
+      gap: .1rem;
+      padding: .7rem .5rem;
+      opacity: 0;
+      transition: opacity .12s;
+    }
+    .schedule-row:hover .cell-actions,
+    .schedule-row:focus-within .cell-actions { opacity: 1; }
+
+    .schedule-empty {
+      padding: 2.5rem 1rem;
+      text-align: center;
+      color: var(--muted);
+      font-size: .9rem;
+    }
+
+    /* Block-type-badge (används fortfarande i övningsbank) */
     .block-type-badge {
       font-size: 0.72rem;
       font-weight: 700;
@@ -381,16 +633,16 @@
     .badge-Grupparbete { background: #D1FAE5; color: #065F46; }
     .badge-Upplevelseövning { background: #FEF3C7; color: #92400E; }
     .badge-Paus { background: #F1F5F9; color: #475569; }
-    .block-info { flex: 1; }
-    .block-info strong { display: block; font-size: 0.95rem; }
-    .block-info span { font-size: 0.82rem; color: var(--muted); }
-    .block-duration {
-      font-size: 0.9rem;
-      font-weight: 700;
-      color: var(--muted);
-      white-space: nowrap;
+    .badge-Icebreaker { background: #FEE2E2; color: #B91C1C; }
+    .badge-Fördjupning { background: #E0E7FF; color: #4338CA; }
+
+    @media (max-width: 700px) {
+      .schedule-head { display: none; }
+      .schedule-row { grid-template-columns: 1fr; gap: 0; }
+      .schedule-row .cell { padding: .75rem 1rem; }
+      .schedule-row .cell-time { flex-direction: row; align-items: center; flex-wrap: wrap; gap: .5rem; border-bottom: 1px dashed var(--border); padding-bottom: .75rem; }
+      .schedule-row .cell-actions { opacity: 1; justify-content: flex-start; padding: 0 1rem .75rem; }
     }
-    .block-actions { display: flex; gap: 0.25rem; }
 
     /* Add block form */
     .add-block-form {
@@ -530,11 +782,11 @@
 <!-- LOGIN -->
 <div id="login-view" class="hidden">
   <div class="login-card">
-    <div class="login-logo">SVT <span>Workshop</span> Studio</div>
-    <p class="login-tagline">Ange lösenord för att fortsätta</p>
+    <div class="login-logo">SVT <span>Workshop</span> Studio.</div>
+    <p class="login-tagline">Logga in för att fortsätta.</p>
     <label for="login-pw">Lösenord</label>
     <input type="password" id="login-pw" autocomplete="current-password" autofocus>
-    <button class="btn btn-primary" id="login-btn" style="width:100%; margin-top:1rem;">Logga in</button>
+    <button class="btn btn-primary" id="login-btn" style="width:100%; margin-top:1.25rem; justify-content:center;">Logga in</button>
     <p class="login-status" id="login-status"></p>
   </div>
 </div>
@@ -548,11 +800,15 @@
     </div>
   </header>
   <main class="dashboard-content">
-    <div class="dashboard-top">
-      <h1>Mina leveranser</h1>
-      <button class="btn btn-primary" id="new-delivery-btn">+ Ny leverans</button>
+    <section class="dashboard-hero">
+      <h1 class="display-1">Mina leveranser.</h1>
+      <p class="display-sub" id="hero-subtitle">Planera, leverera, följ upp.</p>
+    </section>
+    <div class="dashboard-actions">
+      <h2>Workshops</h2>
+      <button class="btn btn-primary btn-sm" id="new-delivery-btn">+ Ny leverans</button>
     </div>
-    <div class="deliveries-grid" id="deliveries-grid">
+    <div class="deliveries-list" id="deliveries-grid">
       <div class="empty-state" id="deliveries-empty">
         <p>Inga leveranser ännu.<br>Skapa din första för att komma igång.</p>
         <button class="btn btn-primary" onclick="openNewDeliveryModal()">+ Ny leverans</button>
@@ -633,19 +889,36 @@
     <!-- TAB: TIDSPLAN -->
     <div class="tab-panel" id="tab-schedule">
       <div class="schedule-top">
-        <div>
-          <div class="time-summary" id="time-summary">
-            Total tid: <strong id="total-time">0 min</strong>
+        <div class="schedule-meta">
+          <div class="start-time-wrapper">
+            <label for="start-time-input">Start</label>
+            <input type="time" id="start-time-input" value="09:00">
           </div>
-          <div class="balance-bar" id="balance-bar" style="width:300px; margin-top:.5rem;"></div>
-          <div style="font-size:0.75rem; color:var(--muted); margin-top:.3rem;" id="balance-legend"></div>
+          <div>
+            <div class="time-summary">
+              Total tid: <strong id="total-time">0 min</strong> · Slut: <strong id="end-time">—</strong>
+            </div>
+            <div class="balance-bar" id="balance-bar" style="width:300px;"></div>
+            <div style="font-size:0.72rem; color:var(--muted); margin-top:.3rem;" id="balance-legend"></div>
+          </div>
         </div>
-        <button class="btn btn-primary btn-sm" id="toggle-add-block-btn">+ Lägg till block</button>
+        <div class="schedule-actions">
+          <button class="btn btn-secondary btn-sm" id="add-buffer-btn">+ Buffert</button>
+          <button class="btn btn-primary btn-sm" id="toggle-add-block-btn">+ Lägg till block</button>
+        </div>
       </div>
 
-      <div class="block-list" id="block-list"></div>
+      <div class="schedule-table" id="schedule-table">
+        <div class="schedule-head">
+          <div>Tid</div>
+          <div>Titel &amp; beskrivning</div>
+          <div>Material / extra info</div>
+          <div></div>
+        </div>
+        <div id="block-list"></div>
+      </div>
 
-      <div class="add-block-form hidden" id="add-block-form">
+      <div class="add-block-form hidden" id="add-block-form" style="margin-top:1rem;">
         <h3>Nytt tidsblock</h3>
         <div class="add-block-row">
           <div class="form-group" style="margin:0">
@@ -656,6 +929,7 @@
               <option>Grupparbete</option>
               <option>Upplevelseövning</option>
               <option>Paus</option>
+              <option>Buffer</option>
             </select>
           </div>
           <div class="form-group" style="margin:0">
@@ -670,6 +944,10 @@
         <div class="form-group">
           <label>Beskrivning (valfritt)</label>
           <input type="text" id="new-block-desc" placeholder="Kort anteckning om innehållet">
+        </div>
+        <div class="form-group">
+          <label>Material / extra info (valfritt)</label>
+          <input type="text" id="new-block-material" placeholder="T.ex. Slides, post-it, whiteboard">
         </div>
         <div style="display:flex; gap:.75rem; justify-content:flex-end">
           <button class="btn btn-secondary btn-sm" id="cancel-add-block-btn">Avbryt</button>
@@ -820,16 +1098,32 @@
     empty.classList.add('hidden');
     grid.innerHTML = '';
     data.forEach(d => {
-      const card = document.createElement('div');
-      card.className = 'delivery-card';
-      card.innerHTML = `
-        <span class="card-status status-${d.status}">${d.status}</span>
-        <div class="card-title">${d.title}</div>
-        <div class="card-meta">${d.client || ''}${d.group_name ? ' · ' + d.group_name : ''}${d.delivery_date ? '<br>' + formatDate(d.delivery_date) : ''}</div>
+      const row = document.createElement('div');
+      row.className = 'delivery-row';
+      const metaParts = [d.client, d.group_name].filter(Boolean);
+      const meta = metaParts.join(' · ');
+      row.innerHTML = `
+        <span class="row-status-dot status-${d.status}" title="${d.status}"></span>
+        <div class="row-content">
+          <div class="row-title">${d.title}</div>
+          ${meta ? `<div class="row-meta">${meta}</div>` : ''}
+        </div>
+        <div class="row-right">
+          ${d.delivery_date ? `<span>${formatDate(d.delivery_date)}</span>` : ''}
+          <span class="row-chevron">›</span>
+        </div>
       `;
-      card.addEventListener('click', () => openDelivery(d));
-      grid.appendChild(card);
+      row.addEventListener('click', () => openDelivery(d));
+      grid.appendChild(row);
     });
+    // Update hero subtitle with count
+    const upcoming = data.filter(d => d.status !== 'Avslutad').length;
+    const sub = document.getElementById('hero-subtitle');
+    if (sub) {
+      sub.textContent = data.length === 1
+        ? '1 workshop.'
+        : `${data.length} workshops · ${upcoming} aktiva.`;
+    }
   }
 
   function formatDate(dateStr) {
@@ -952,11 +1246,26 @@
   });
 
   // ── TIDSPLAN ──
+  const BLOCK_TYPES = ['Teori', 'Reflektion', 'Grupparbete', 'Upplevelseövning', 'Paus', 'Buffer'];
+  const fieldSaveTimers = {};
+
   async function loadSchedule() {
     const { data } = await sb.from('schedule_blocks').select('*')
       .eq('delivery_id', currentDelivery.id).order('sort_order');
     scheduleBlocks = data || [];
+    document.getElementById('start-time-input').value = (currentDelivery.start_time || '09:00').slice(0, 5);
     renderSchedule();
+  }
+
+  function parseStartTime() {
+    const v = document.getElementById('start-time-input').value || '09:00';
+    const [h, m] = v.split(':').map(Number);
+    return (h || 0) * 60 + (m || 0);
+  }
+  function formatClock(totalMin) {
+    const m = ((totalMin % (24 * 60)) + 24 * 60) % (24 * 60);
+    const h = Math.floor(m / 60), rest = m % 60;
+    return String(h).padStart(2, '0') + ':' + String(rest).padStart(2, '0');
   }
 
   function renderSchedule() {
@@ -964,39 +1273,136 @@
     list.innerHTML = '';
 
     if (scheduleBlocks.length === 0) {
-      list.innerHTML = '<p style="color:var(--muted);font-size:.9rem;">Inga block ännu. Lägg till ditt första block nedan.</p>';
-    } else {
-      scheduleBlocks.forEach((block, i) => {
-        const el = document.createElement('div');
-        el.className = 'block-item';
-        el.dataset.type = block.block_type;
-        el.innerHTML = `
-          <span class="block-type-badge badge-${block.block_type}">${block.block_type}</span>
-          <div class="block-info">
-            <strong>${block.title}</strong>
-            ${block.description ? `<span>${block.description}</span>` : ''}
-          </div>
-          <span class="block-duration">${block.duration_minutes} min</span>
-          <div class="block-actions">
-            ${i > 0 ? `<button class="btn btn-ghost btn-sm" onclick="moveBlock('${block.id}', -1)">↑</button>` : '<button class="btn btn-ghost btn-sm" disabled>↑</button>'}
-            ${i < scheduleBlocks.length - 1 ? `<button class="btn btn-ghost btn-sm" onclick="moveBlock('${block.id}', 1)">↓</button>` : '<button class="btn btn-ghost btn-sm" disabled>↓</button>'}
-            <button class="btn btn-danger btn-sm" onclick="deleteBlock('${block.id}')">×</button>
-          </div>
-        `;
-        list.appendChild(el);
-      });
+      list.innerHTML = '<div class="schedule-empty">Inga block ännu. Lägg till ditt första block med knappen ovan.</div>';
+      updateTimeSummary();
+      return;
     }
 
+    let cumulative = parseStartTime();
+    scheduleBlocks.forEach((block, i) => {
+      const clock = formatClock(cumulative);
+      cumulative += block.duration_minutes || 0;
+
+      const row = document.createElement('div');
+      row.className = 'schedule-row';
+      row.dataset.type = block.block_type;
+      row.dataset.id = block.id;
+      row.innerHTML = `
+        <div class="cell cell-time">
+          <div class="clock-time">${clock}</div>
+          <div class="duration-row">
+            <input class="duration-input" type="number" min="0" step="5" value="${block.duration_minutes}" data-field="duration_minutes" aria-label="Längd i minuter">
+            <span>min</span>
+          </div>
+          <select class="type-select" data-field="block_type" data-type="${block.block_type}" aria-label="Blocktyp">
+            ${BLOCK_TYPES.map(t => `<option value="${t}"${t === block.block_type ? ' selected' : ''}>${t}</option>`).join('')}
+          </select>
+        </div>
+        <div class="cell cell-content">
+          <div class="block-title-edit" contenteditable="true" data-field="title" data-placeholder="Titel...">${escapeHtml(block.title || '')}</div>
+          <div class="block-desc-edit" contenteditable="true" data-field="description" data-placeholder="Beskrivning...">${escapeHtml(block.description || '')}</div>
+        </div>
+        <div class="cell">
+          <div class="block-material-edit" contenteditable="true" data-field="material" data-placeholder="Material, slides, vem leder...">${escapeHtml(block.material || '')}</div>
+        </div>
+        <div class="cell-actions">
+          <button class="btn btn-ghost btn-sm" data-action="up" ${i === 0 ? 'disabled' : ''} title="Flytta upp">↑</button>
+          <button class="btn btn-ghost btn-sm" data-action="down" ${i === scheduleBlocks.length - 1 ? 'disabled' : ''} title="Flytta ner">↓</button>
+          <button class="btn btn-danger btn-sm" data-action="delete" title="Ta bort">×</button>
+        </div>
+      `;
+      list.appendChild(row);
+    });
+
+    wireRowHandlers();
     updateTimeSummary();
   }
 
-  function updateTimeSummary() {
-    const total = scheduleBlocks.reduce((s, b) => s + b.duration_minutes, 0);
-    document.getElementById('total-time').textContent = formatMinutes(total);
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
 
-    const colors = { Teori: '#3B82F6', Reflektion: '#7C3AED', Grupparbete: '#059669', Upplevelseövning: '#D97706', Paus: '#94A3B8' };
+  function wireRowHandlers() {
+    document.querySelectorAll('#block-list .schedule-row').forEach(row => {
+      const id = row.dataset.id;
+
+      // Inline-redigerbara textfält → spara vid blur (debounced).
+      row.querySelectorAll('[contenteditable="true"]').forEach(el => {
+        el.addEventListener('blur', () => {
+          const field = el.dataset.field;
+          const value = el.innerText.trim() || null;
+          updateBlockField(id, field, value);
+        });
+        el.addEventListener('keydown', e => {
+          if (e.key === 'Enter' && !e.shiftKey && el.dataset.field === 'title') {
+            e.preventDefault();
+            el.blur();
+          }
+          if (e.key === 'Escape') el.blur();
+        });
+      });
+
+      // Duration-input → spara on change
+      const durInput = row.querySelector('.duration-input');
+      durInput.addEventListener('change', () => {
+        const value = Math.max(0, parseInt(durInput.value) || 0);
+        durInput.value = value;
+        updateBlockField(id, 'duration_minutes', value, true);
+      });
+
+      // Type-select → spara on change
+      const typeSel = row.querySelector('.type-select');
+      typeSel.addEventListener('change', () => {
+        updateBlockField(id, 'block_type', typeSel.value, true);
+      });
+
+      // Actions
+      row.querySelector('[data-action="up"]').addEventListener('click', () => moveBlock(id, -1));
+      row.querySelector('[data-action="down"]').addEventListener('click', () => moveBlock(id, 1));
+      row.querySelector('[data-action="delete"]').addEventListener('click', () => deleteBlock(id));
+    });
+  }
+
+  function updateBlockField(id, field, value, immediate = false) {
+    const block = scheduleBlocks.find(b => b.id === id);
+    if (!block) return;
+    if (block[field] === value) return;
+    block[field] = value;
+
+    // Re-render direkt om det påverkar layouten (typ, längd)
+    if (field === 'duration_minutes' || field === 'block_type') {
+      renderSchedule();
+    } else {
+      updateTimeSummary();
+    }
+
+    const key = id + ':' + field;
+    clearTimeout(fieldSaveTimers[key]);
+    const save = async () => {
+      const { error } = await sb.from('schedule_blocks').update({ [field]: value }).eq('id', id);
+      if (error) showToast('Kunde inte spara ändringen.');
+    };
+    if (immediate) save();
+    else fieldSaveTimers[key] = setTimeout(save, 600);
+  }
+
+  async function saveStartTime() {
+    if (!currentDelivery) return;
+    const value = document.getElementById('start-time-input').value || '09:00';
+    currentDelivery.start_time = value;
+    renderSchedule();
+    await sb.from('deliveries').update({ start_time: value }).eq('id', currentDelivery.id);
+  }
+  document.getElementById('start-time-input').addEventListener('change', saveStartTime);
+
+  function updateTimeSummary() {
+    const total = scheduleBlocks.reduce((s, b) => s + (b.duration_minutes || 0), 0);
+    document.getElementById('total-time').textContent = formatMinutes(total);
+    document.getElementById('end-time').textContent = total > 0 ? formatClock(parseStartTime() + total) : '—';
+
+    const colors = { Teori: '#3B82F6', Reflektion: '#7C3AED', Grupparbete: '#059669', Upplevelseövning: '#D97706', Paus: '#94A3B8', Buffer: '#CBD5E1' };
     const counts = {};
-    scheduleBlocks.forEach(b => counts[b.block_type] = (counts[b.block_type] || 0) + b.duration_minutes);
+    scheduleBlocks.forEach(b => counts[b.block_type] = (counts[b.block_type] || 0) + (b.duration_minutes || 0));
 
     const bar = document.getElementById('balance-bar');
     const legend = document.getElementById('balance-legend');
@@ -1005,6 +1411,7 @@
 
     if (total > 0) {
       Object.entries(counts).forEach(([type, mins]) => {
+        if (!mins) return;
         const seg = document.createElement('div');
         seg.className = 'balance-segment';
         seg.style.width = (mins / total * 100) + '%';
@@ -1012,7 +1419,7 @@
         seg.title = type + ': ' + mins + ' min';
         bar.appendChild(seg);
       });
-      legend.textContent = Object.entries(counts).map(([t, m]) => `${t}: ${m}min`).join(' · ');
+      legend.textContent = Object.entries(counts).filter(([, m]) => m).map(([t, m]) => `${t}: ${m}min`).join(' · ');
     }
   }
 
@@ -1031,6 +1438,22 @@
     document.getElementById('add-block-form').classList.add('hidden');
   });
 
+  document.getElementById('add-buffer-btn').addEventListener('click', async () => {
+    const block = {
+      delivery_id: currentDelivery.id,
+      block_type: 'Buffer',
+      title: 'Buffertid',
+      duration_minutes: 10,
+      description: null,
+      material: null,
+      sort_order: scheduleBlocks.length,
+    };
+    const { data, error } = await sb.from('schedule_blocks').insert(block).select().single();
+    if (error) { showToast('Kunde inte lägga till buffert.'); return; }
+    scheduleBlocks.push(data);
+    renderSchedule();
+  });
+
   document.getElementById('save-block-btn').addEventListener('click', async () => {
     const title = document.getElementById('new-block-title').value.trim();
     if (!title) { showToast('Ange en titel för blocket.'); return; }
@@ -1040,6 +1463,7 @@
       title,
       duration_minutes: parseInt(document.getElementById('new-block-duration').value) || 30,
       description: document.getElementById('new-block-desc').value.trim() || null,
+      material: document.getElementById('new-block-material').value.trim() || null,
       sort_order: scheduleBlocks.length,
     };
     const { data, error } = await sb.from('schedule_blocks').insert(block).select().single();
@@ -1048,7 +1472,9 @@
     renderSchedule();
     document.getElementById('new-block-title').value = '';
     document.getElementById('new-block-desc').value = '';
+    document.getElementById('new-block-material').value = '';
     document.getElementById('new-block-duration').value = '30';
+    document.getElementById('add-block-form').classList.add('hidden');
     showToast('Block tillagt!');
   });
 
@@ -1147,11 +1573,13 @@
       title: ex.name,
       duration_minutes: ex.duration_minutes,
       description: ex.purpose || null,
+      material: ex.instructions || null,
       sort_order: scheduleBlocks.length,
     };
     const { data } = await sb.from('schedule_blocks').insert(block).select().single();
     if (data) {
       scheduleBlocks.push(data);
+      renderSchedule();
       showToast(`"${ex.name}" lagd i tidsplanen!`);
     }
   }
@@ -1194,7 +1622,25 @@
       'Grupparbete': '059669',
       'Upplevelseövning': 'D97706',
       'Paus': '94A3B8',
+      'Buffer': 'CBD5E1',
     };
+
+    const startMin = (() => {
+      const v = (currentDelivery.start_time || '09:00').slice(0, 5);
+      const [h, m] = v.split(':').map(Number);
+      return (h || 0) * 60 + (m || 0);
+    })();
+    const fmtClock = (totalMin) => {
+      const m = ((totalMin % (24 * 60)) + 24 * 60) % (24 * 60);
+      const h = Math.floor(m / 60), rest = m % 60;
+      return String(h).padStart(2, '0') + ':' + String(rest).padStart(2, '0');
+    };
+    let cumMin = startMin;
+    const blockTimes = scheduleBlocks.map(b => {
+      const t = fmtClock(cumMin);
+      cumMin += b.duration_minutes || 0;
+      return t;
+    });
 
     // ── SLIDE 1: COVER ──
     const cover = pres.addSlide();
@@ -1242,9 +1688,12 @@
       const y = 1.9 + i * 0.55;
       if (y > 6.5) return;
       agenda.addShape(pres.ShapeType.rect, { x: 0.5, y, w: 0.06, h: 0.38, fill: { color: col } });
-      agenda.addText(block.title, { x: 0.75, y, w: 6.5, h: 0.38, fontSize: 12, color: DARK, fontFace: 'Calibri', bold: true });
+      agenda.addText(blockTimes[i], {
+        x: 0.65, y, w: 0.85, h: 0.38, fontSize: 12, bold: true, color: DARK, fontFace: 'Calibri',
+      });
+      agenda.addText(block.title, { x: 1.55, y, w: 6, h: 0.38, fontSize: 12, color: DARK, fontFace: 'Calibri', bold: true });
       agenda.addText(block.block_type + ' · ' + block.duration_minutes + ' min', {
-        x: 0.75, y: y + 0.2, w: 6.5, h: 0.25, fontSize: 10, color: MUTED, fontFace: 'Calibri',
+        x: 1.55, y: y + 0.2, w: 6, h: 0.25, fontSize: 10, color: MUTED, fontFace: 'Calibri',
       });
       agenda.addText(block.duration_minutes + ' min', {
         x: 8.5, y, w: 1, h: 0.38, fontSize: 11, color: MUTED, fontFace: 'Calibri', align: 'right',
@@ -1252,7 +1701,7 @@
     });
 
     // ── SLIDES PER BLOCK ──
-    scheduleBlocks.forEach(block => {
+    scheduleBlocks.forEach((block, i) => {
       const slide = pres.addSlide();
       const col = typeColors[block.block_type] || MUTED;
 
@@ -1263,8 +1712,8 @@
         x: 0.5, y: 0.2, w: 4, h: 0.35,
         fontSize: 9, bold: true, color: col, fontFace: 'Calibri', charSpacing: 2,
       });
-      slide.addText(block.duration_minutes + ' min', {
-        x: 7, y: 0.2, w: 2.5, h: 0.35,
+      slide.addText(blockTimes[i] + ' · ' + block.duration_minutes + ' min', {
+        x: 6, y: 0.2, w: 3.5, h: 0.35,
         fontSize: 11, color: MUTED, fontFace: 'Calibri', align: 'right',
       });
       slide.addText(block.title, {
@@ -1276,6 +1725,17 @@
         slide.addText(block.description, {
           x: 0.5, y: 1.8, w: 9, h: 1.5,
           fontSize: 15, color: '334155', fontFace: 'Calibri', align: 'left',
+        });
+      }
+
+      if (block.material) {
+        slide.addText('MATERIAL', {
+          x: 0.5, y: 5.2, w: 9, h: 0.3,
+          fontSize: 9, bold: true, color: MUTED, fontFace: 'Calibri', charSpacing: 2,
+        });
+        slide.addText(block.material, {
+          x: 0.5, y: 5.5, w: 9, h: 1.3,
+          fontSize: 12, color: '475569', fontFace: 'Calibri', align: 'left',
         });
       }
 
