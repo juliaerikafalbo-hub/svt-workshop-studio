@@ -525,38 +525,11 @@
 </head>
 <body>
 
-<!-- LOGIN -->
-<div id="login-view">
-  <div class="login-card">
-    <div class="login-logo">SVT <span>Workshop</span> Studio</div>
-    <p class="login-tagline">Planera, leverera och följ upp dina workshops</p>
-
-    <div id="login-step-email">
-      <label for="login-email">Din e-postadress</label>
-      <input type="email" id="login-email" placeholder="julia@svt.se" autocomplete="email">
-      <button class="btn btn-primary" id="login-btn" style="width:100%">Skicka inloggningskod</button>
-    </div>
-
-    <div id="login-step-code" class="hidden">
-      <p style="margin:0 0 12px 0; color:#6B7280; font-size:14px;">Vi har skickat en inloggningskod till <strong id="login-code-email"></strong>. Skriv in den nedan.</p>
-      <label for="login-code">Inloggningskod</label>
-      <input type="text" id="login-code" placeholder="12345678" inputmode="numeric" autocomplete="one-time-code" maxlength="8" style="letter-spacing:4px; font-size:20px; text-align:center;">
-      <button class="btn btn-primary" id="verify-btn" style="width:100%">Logga in</button>
-      <button class="btn btn-ghost btn-sm" id="login-back-btn" style="width:100%; margin-top:8px;">← Använd annan e-post</button>
-    </div>
-
-    <p class="login-status" id="login-status"></p>
-  </div>
-</div>
-
 <!-- DASHBOARD -->
 <div id="dashboard-view" class="hidden">
   <header class="app-header">
     <div class="app-logo">SVT <span>Workshop</span> Studio</div>
-    <div class="header-right">
-      <span class="user-email" id="user-email-display"></span>
-      <button class="btn btn-ghost btn-sm" id="logout-btn">Logga ut</button>
-    </div>
+    <div class="header-right"></div>
   </header>
   <main class="dashboard-content">
     <div class="dashboard-top">
@@ -765,7 +738,6 @@
   const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZjeWtiYWJmdHhseWl2eGFvaHhhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkyNzA1NjQsImV4cCI6MjA5NDg0NjU2NH0.2cOhsyzrpu4l4PDh8qAmBhYfP-niCit4DSyufIsWuAU';
   const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-  let currentUser = null;
   let currentDelivery = null;
   let allExercises = [];
   let scheduleBlocks = [];
@@ -781,93 +753,10 @@
 
   // ── VIEWS ──
   function showView(id) {
-    ['login-view','dashboard-view','delivery-view'].forEach(v =>
+    ['dashboard-view','delivery-view'].forEach(v =>
       document.getElementById(v).classList.add('hidden'));
     document.getElementById(id).classList.remove('hidden');
   }
-
-  // ── AUTH ──
-  let pendingLoginEmail = null;
-
-  document.getElementById('login-btn').addEventListener('click', async () => {
-    const email = document.getElementById('login-email').value.trim();
-    const status = document.getElementById('login-status');
-    const btn = document.getElementById('login-btn');
-    if (!email) { status.textContent = 'Ange din e-postadress.'; status.className = 'login-status err'; return; }
-    btn.disabled = true;
-    btn.innerHTML = '<span class="spinner"></span> Skickar...';
-    const { error } = await sb.auth.signInWithOtp({
-      email,
-      options: { shouldCreateUser: true }
-    });
-    btn.disabled = false;
-    btn.textContent = 'Skicka inloggningskod';
-    if (error) {
-      status.textContent = 'Något gick fel: ' + error.message;
-      status.className = 'login-status err';
-    } else {
-      pendingLoginEmail = email;
-      document.getElementById('login-code-email').textContent = email;
-      document.getElementById('login-step-email').classList.add('hidden');
-      document.getElementById('login-step-code').classList.remove('hidden');
-      status.textContent = '';
-      setTimeout(() => document.getElementById('login-code').focus(), 50);
-    }
-  });
-
-  document.getElementById('verify-btn').addEventListener('click', async () => {
-    const code = document.getElementById('login-code').value.trim();
-    const status = document.getElementById('login-status');
-    const btn = document.getElementById('verify-btn');
-    if (!code || code.length < 6) { status.textContent = 'Skriv in koden från mailet.'; status.className = 'login-status err'; return; }
-    if (!pendingLoginEmail) { status.textContent = 'Något gick fel — gå tillbaka och försök igen.'; status.className = 'login-status err'; return; }
-    btn.disabled = true;
-    btn.innerHTML = '<span class="spinner"></span> Verifierar...';
-    const { error } = await sb.auth.verifyOtp({
-      email: pendingLoginEmail,
-      token: code,
-      type: 'email'
-    });
-    btn.disabled = false;
-    btn.textContent = 'Logga in';
-    if (error) {
-      status.textContent = 'Fel: ' + error.message;
-      status.className = 'login-status err';
-      console.error('verifyOtp error:', error);
-    } else {
-      status.textContent = '';
-    }
-  });
-
-  document.getElementById('login-back-btn').addEventListener('click', () => {
-    pendingLoginEmail = null;
-    document.getElementById('login-code').value = '';
-    document.getElementById('login-status').textContent = '';
-    document.getElementById('login-step-code').classList.add('hidden');
-    document.getElementById('login-step-email').classList.remove('hidden');
-  });
-
-  document.getElementById('login-email').addEventListener('keydown', e => {
-    if (e.key === 'Enter') document.getElementById('login-btn').click();
-  });
-  document.getElementById('login-code').addEventListener('keydown', e => {
-    if (e.key === 'Enter') document.getElementById('verify-btn').click();
-  });
-
-  document.getElementById('logout-btn').addEventListener('click', async () => {
-    await sb.auth.signOut();
-    currentUser = null;
-    showView('login-view');
-  });
-
-  sb.auth.onAuthStateChange((event, session) => {
-    if (session?.user) {
-      currentUser = session.user;
-      document.getElementById('user-email-display').textContent = currentUser.email;
-      showView('dashboard-view');
-      loadDeliveries();
-    }
-  });
 
   // ── DELIVERIES ──
   async function loadDeliveries() {
@@ -919,7 +808,6 @@
     const title = document.getElementById('new-title').value.trim();
     if (!title) { showToast('Ange en titel.'); return; }
     const { data, error } = await sb.from('deliveries').insert({
-      user_id: currentUser.id,
       title,
       client: document.getElementById('new-client').value.trim() || null,
       group_name: document.getElementById('new-group').value.trim() || null,
@@ -1374,15 +1262,8 @@
   }
 
   // ── INIT ──
-  (async () => {
-    const { data: { session } } = await sb.auth.getSession();
-    if (session?.user) {
-      currentUser = session.user;
-      document.getElementById('user-email-display').textContent = currentUser.email;
-      showView('dashboard-view');
-      loadDeliveries();
-    }
-  })();
+  showView('dashboard-view');
+  loadDeliveries();
 </script>
 </body>
 </html>
