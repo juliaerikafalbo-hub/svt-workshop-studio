@@ -1,0 +1,1335 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SVT Workshop Studio</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #F8FAFC;
+      --surface: #FFFFFF;
+      --border: #E2E8F0;
+      --text: #0F172A;
+      --muted: #64748B;
+      --accent: #2563EB;
+      --accent-hover: #1D4ED8;
+      --accent-light: #EFF6FF;
+      --radius: 10px;
+      --shadow: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.04);
+      --shadow-md: 0 4px 16px rgba(0,0,0,.10);
+      --teori: #3B82F6;
+      --reflektion: #7C3AED;
+      --grupparbete: #059669;
+      --upplevelse: #D97706;
+      --paus: #94A3B8;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      font-size: 15px;
+      line-height: 1.5;
+    }
+
+    /* ── LOGIN ── */
+    #login-view {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+    .login-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2.5rem;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: var(--shadow-md);
+      text-align: center;
+    }
+    .login-logo {
+      font-size: 1.6rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      margin-bottom: 0.25rem;
+      color: var(--text);
+    }
+    .login-logo span { color: var(--accent); }
+    .login-tagline {
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin-bottom: 2rem;
+    }
+    .login-card label {
+      display: block;
+      text-align: left;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 0.4rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .login-card input[type="email"] {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 1rem;
+      outline: none;
+      transition: border-color .15s;
+      margin-bottom: 1rem;
+    }
+    .login-card input[type="email"]:focus { border-color: var(--accent); }
+    .login-status {
+      margin-top: 1rem;
+      font-size: 0.9rem;
+      color: var(--muted);
+      min-height: 1.4rem;
+    }
+    .login-status.ok { color: #059669; }
+    .login-status.err { color: #DC2626; }
+
+    /* ── SHARED COMPONENTS ── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.65rem 1.25rem;
+      border: none;
+      border-radius: var(--radius);
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .15s, opacity .15s;
+      text-decoration: none;
+    }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-primary:hover { background: var(--accent-hover); }
+    .btn-secondary { background: var(--surface); color: var(--text); border: 1.5px solid var(--border); }
+    .btn-secondary:hover { background: var(--bg); }
+    .btn-ghost { background: transparent; color: var(--muted); }
+    .btn-ghost:hover { background: var(--bg); color: var(--text); }
+    .btn-danger { background: #FEE2E2; color: #DC2626; }
+    .btn-danger:hover { background: #FECACA; }
+    .btn-sm { padding: 0.4rem 0.8rem; font-size: 0.82rem; }
+    .btn:disabled { opacity: .5; cursor: not-allowed; }
+
+    /* ── APP HEADER ── */
+    .app-header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 1.5rem;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .app-logo {
+      font-size: 1.1rem;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+    }
+    .app-logo span { color: var(--accent); }
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .user-email {
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+
+    /* ── DASHBOARD ── */
+    .dashboard-content {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem;
+    }
+    .dashboard-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.75rem;
+    }
+    .dashboard-top h1 { font-size: 1.5rem; font-weight: 700; }
+    .deliveries-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1rem;
+    }
+    .delivery-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      box-shadow: var(--shadow);
+      cursor: pointer;
+      transition: box-shadow .15s, border-color .15s;
+    }
+    .delivery-card:hover { box-shadow: var(--shadow-md); border-color: #CBD5E1; }
+    .card-status {
+      display: inline-block;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      padding: 0.2rem 0.5rem;
+      border-radius: 20px;
+      margin-bottom: 0.75rem;
+    }
+    .status-Planering { background: #FEF9C3; color: #854D0E; }
+    .status-Pågående { background: #DCFCE7; color: #166534; }
+    .status-Avslutad { background: #F1F5F9; color: #64748B; }
+    .card-title { font-size: 1.05rem; font-weight: 700; margin-bottom: 0.25rem; }
+    .card-meta { font-size: 0.85rem; color: var(--muted); }
+    .empty-state {
+      text-align: center;
+      padding: 4rem 1rem;
+      color: var(--muted);
+    }
+    .empty-state p { margin-bottom: 1.25rem; font-size: 1.05rem; }
+
+    /* ── MODAL ── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.4);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: var(--surface);
+      border-radius: 16px;
+      padding: 2rem;
+      width: 100%;
+      max-width: 480px;
+      box-shadow: var(--shadow-md);
+    }
+    .modal h2 { font-size: 1.2rem; font-weight: 700; margin-bottom: 1.25rem; }
+    .modal-footer { display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem; }
+
+    /* ── FORM ELEMENTS ── */
+    .form-group { margin-bottom: 1.1rem; }
+    .form-group label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 0.35rem;
+    }
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+      width: 100%;
+      padding: 0.7rem 0.9rem;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 0.95rem;
+      font-family: inherit;
+      outline: none;
+      transition: border-color .15s;
+      background: var(--surface);
+      color: var(--text);
+    }
+    .form-group input:focus,
+    .form-group textarea:focus,
+    .form-group select:focus { border-color: var(--accent); }
+    .form-group textarea { resize: vertical; min-height: 80px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+    /* ── DELIVERY VIEW ── */
+    .delivery-header {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 1.5rem 1.5rem 0;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .delivery-title-block { flex: 1; }
+    .delivery-title-block h2 { font-size: 1.4rem; font-weight: 700; }
+    .delivery-title-block p { font-size: 0.9rem; color: var(--muted); }
+    .status-select {
+      padding: 0.4rem 0.75rem;
+      border: 1.5px solid var(--border);
+      border-radius: 20px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+      outline: none;
+      background: var(--surface);
+    }
+
+    /* ── TABS ── */
+    .tabs-bar {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 1rem 1.5rem 0;
+      display: flex;
+      gap: 0.25rem;
+      border-bottom: 2px solid var(--border);
+    }
+    .tab-btn {
+      padding: 0.6rem 1rem;
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--muted);
+      cursor: pointer;
+      transition: color .15s, border-color .15s;
+    }
+    .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+    .tab-content {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 1.75rem 1.5rem;
+    }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* ── BEHOVSANALYS ── */
+    .notes-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    @media (max-width: 600px) { .notes-form-grid, .form-row { grid-template-columns: 1fr; } }
+    .notes-full { grid-column: 1 / -1; }
+    .save-bar {
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.75rem;
+      margin-top: 1.25rem;
+      align-items: center;
+    }
+    .save-status { font-size: 0.85rem; color: var(--muted); }
+    .save-status.ok { color: #059669; }
+
+    /* ── TIDSPLAN ── */
+    .schedule-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 1.25rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .time-summary {
+      background: var(--accent-light);
+      border-radius: var(--radius);
+      padding: 0.75rem 1.25rem;
+      font-size: 0.9rem;
+    }
+    .time-summary strong { color: var(--accent); }
+    .balance-bar {
+      display: flex;
+      height: 8px;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-top: 0.5rem;
+      gap: 2px;
+    }
+    .balance-segment { height: 100%; transition: width .3s; }
+
+    .block-list { display: flex; flex-direction: column; gap: 0.6rem; }
+    .block-item {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-left: 4px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.9rem 1rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .block-item[data-type="Teori"] { border-left-color: var(--teori); }
+    .block-item[data-type="Reflektion"] { border-left-color: var(--reflektion); }
+    .block-item[data-type="Grupparbete"] { border-left-color: var(--grupparbete); }
+    .block-item[data-type="Upplevelseövning"] { border-left-color: var(--upplevelse); }
+    .block-item[data-type="Paus"] { border-left-color: var(--paus); }
+    .block-type-badge {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      padding: 0.15rem 0.5rem;
+      border-radius: 4px;
+      white-space: nowrap;
+    }
+    .badge-Teori { background: #DBEAFE; color: #1D4ED8; }
+    .badge-Reflektion { background: #EDE9FE; color: #5B21B6; }
+    .badge-Grupparbete { background: #D1FAE5; color: #065F46; }
+    .badge-Upplevelseövning { background: #FEF3C7; color: #92400E; }
+    .badge-Paus { background: #F1F5F9; color: #475569; }
+    .block-info { flex: 1; }
+    .block-info strong { display: block; font-size: 0.95rem; }
+    .block-info span { font-size: 0.82rem; color: var(--muted); }
+    .block-duration {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+    .block-actions { display: flex; gap: 0.25rem; }
+
+    /* Add block form */
+    .add-block-form {
+      background: var(--surface);
+      border: 1.5px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      margin-top: 1rem;
+    }
+    .add-block-form h3 { font-size: 0.95rem; font-weight: 700; margin-bottom: 1rem; }
+    .add-block-row { display: grid; grid-template-columns: 1fr 1fr 120px; gap: 0.75rem; margin-bottom: 0.75rem; }
+    @media (max-width: 600px) { .add-block-row { grid-template-columns: 1fr; } }
+
+    /* ── ÖVNINGSBANK ── */
+    .exercises-top {
+      display: flex;
+      gap: 0.75rem;
+      margin-bottom: 1.25rem;
+      flex-wrap: wrap;
+    }
+    .exercises-top input[type="search"] {
+      flex: 1;
+      min-width: 200px;
+      padding: 0.6rem 0.9rem;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 0.9rem;
+      outline: none;
+    }
+    .exercises-top input:focus { border-color: var(--accent); }
+    .filter-chips { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+    .chip {
+      padding: 0.3rem 0.75rem;
+      border-radius: 20px;
+      border: 1.5px solid var(--border);
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      background: var(--surface);
+      transition: all .15s;
+    }
+    .chip.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .exercises-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 0.9rem;
+    }
+    .exercise-card {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem;
+      box-shadow: var(--shadow);
+    }
+    .exercise-card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 0.5rem;
+    }
+    .exercise-card h4 { font-size: 0.95rem; font-weight: 700; flex: 1; }
+    .fav-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.1rem;
+      padding: 0;
+      line-height: 1;
+      transition: transform .15s;
+    }
+    .fav-btn:hover { transform: scale(1.2); }
+    .exercise-meta {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-bottom: 0.5rem;
+    }
+    .exercise-purpose {
+      font-size: 0.85rem;
+      color: var(--text);
+      margin-bottom: 0.75rem;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .exercise-card-footer { display: flex; justify-content: space-between; align-items: center; }
+
+    /* ── EXPORT ── */
+    .export-panel {
+      max-width: 560px;
+    }
+    .export-panel h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.5rem; }
+    .export-panel p { color: var(--muted); font-size: 0.9rem; margin-bottom: 1.5rem; }
+    .export-options { display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1.5rem; }
+    .export-option {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .export-option-icon { font-size: 1.75rem; }
+    .export-option-text h4 { font-size: 0.95rem; font-weight: 700; }
+    .export-option-text p { font-size: 0.82rem; color: var(--muted); }
+
+    /* ── UTILS ── */
+    .hidden { display: none !important; }
+    .spinner {
+      width: 18px; height: 18px;
+      border: 2px solid rgba(255,255,255,.4);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+      display: inline-block;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .toast {
+      position: fixed;
+      bottom: 1.5rem;
+      right: 1.5rem;
+      background: #1E293B;
+      color: #fff;
+      padding: 0.8rem 1.25rem;
+      border-radius: var(--radius);
+      font-size: 0.9rem;
+      z-index: 200;
+      box-shadow: var(--shadow-md);
+      transition: opacity .3s;
+    }
+    .toast.hidden { opacity: 0; pointer-events: none; }
+  </style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-view">
+  <div class="login-card">
+    <div class="login-logo">SVT <span>Workshop</span> Studio</div>
+    <p class="login-tagline">Planera, leverera och följ upp dina workshops</p>
+    <label for="login-email">Din e-postadress</label>
+    <input type="email" id="login-email" placeholder="julia@svt.se" autocomplete="email">
+    <button class="btn btn-primary" id="login-btn" style="width:100%">Skicka inloggningslänk</button>
+    <p class="login-status" id="login-status"></p>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard-view" class="hidden">
+  <header class="app-header">
+    <div class="app-logo">SVT <span>Workshop</span> Studio</div>
+    <div class="header-right">
+      <span class="user-email" id="user-email-display"></span>
+      <button class="btn btn-ghost btn-sm" id="logout-btn">Logga ut</button>
+    </div>
+  </header>
+  <main class="dashboard-content">
+    <div class="dashboard-top">
+      <h1>Mina leveranser</h1>
+      <button class="btn btn-primary" id="new-delivery-btn">+ Ny leverans</button>
+    </div>
+    <div class="deliveries-grid" id="deliveries-grid">
+      <div class="empty-state" id="deliveries-empty">
+        <p>Inga leveranser ännu.<br>Skapa din första för att komma igång.</p>
+        <button class="btn btn-primary" onclick="openNewDeliveryModal()">+ Ny leverans</button>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- DELIVERY VIEW -->
+<div id="delivery-view" class="hidden">
+  <header class="app-header">
+    <div class="app-logo">SVT <span>Workshop</span> Studio</div>
+    <div class="header-right">
+      <button class="btn btn-ghost btn-sm" id="back-btn">← Tillbaka</button>
+    </div>
+  </header>
+  <div class="delivery-header">
+    <div class="delivery-title-block">
+      <h2 id="delivery-view-title">Leverans</h2>
+      <p id="delivery-view-meta"></p>
+    </div>
+    <select class="status-select" id="delivery-status-select">
+      <option value="Planering">Planering</option>
+      <option value="Pågående">Pågående</option>
+      <option value="Avslutad">Avslutad</option>
+    </select>
+  </div>
+  <div class="tabs-bar">
+    <button class="tab-btn active" data-tab="notes">Behovsanalys</button>
+    <button class="tab-btn" data-tab="schedule">Tidsplan</button>
+    <button class="tab-btn" data-tab="exercises">Övningsbank</button>
+    <button class="tab-btn" data-tab="export">Export</button>
+  </div>
+  <div class="tab-content">
+
+    <!-- TAB: BEHOVSANALYS -->
+    <div class="tab-panel active" id="tab-notes">
+      <div class="notes-form-grid">
+        <div class="form-group">
+          <label>Beställare / Chef</label>
+          <input type="text" id="note-client" placeholder="Namn och roll">
+        </div>
+        <div class="form-group">
+          <label>Grupp / Team</label>
+          <input type="text" id="note-group" placeholder="T.ex. Nyhetsredaktionen">
+        </div>
+        <div class="form-group">
+          <label>Datum</label>
+          <input type="date" id="note-date">
+        </div>
+        <div class="form-group">
+          <label>Antal deltagare</label>
+          <input type="number" id="note-participants" placeholder="12" min="1">
+        </div>
+        <div class="form-group notes-full">
+          <label>Syfte med insatsen</label>
+          <textarea id="note-purpose" placeholder="Varför görs den här workshopen? Vad är det övergripande syftet?"></textarea>
+        </div>
+        <div class="form-group notes-full">
+          <label>Mål — vad ska deltagarna ta med sig?</label>
+          <textarea id="note-goals" placeholder="Vad ska deltagarna kunna, känna eller göra annorlunda efteråt?"></textarea>
+        </div>
+        <div class="form-group notes-full">
+          <label>Utmaningar och behov</label>
+          <textarea id="note-challenges" placeholder="Vad är gruppens nuläge? Vilka utmaningar lyftes i uppstartsmötet?"></textarea>
+        </div>
+        <div class="form-group notes-full">
+          <label>Övriga anteckningar</label>
+          <textarea id="note-other" placeholder="Praktiska detaljer, saker att tänka på, önskemål från beställaren..."></textarea>
+        </div>
+      </div>
+      <div class="save-bar">
+        <span class="save-status" id="notes-save-status"></span>
+        <button class="btn btn-primary" id="save-notes-btn">Spara</button>
+      </div>
+    </div>
+
+    <!-- TAB: TIDSPLAN -->
+    <div class="tab-panel" id="tab-schedule">
+      <div class="schedule-top">
+        <div>
+          <div class="time-summary" id="time-summary">
+            Total tid: <strong id="total-time">0 min</strong>
+          </div>
+          <div class="balance-bar" id="balance-bar" style="width:300px; margin-top:.5rem;"></div>
+          <div style="font-size:0.75rem; color:var(--muted); margin-top:.3rem;" id="balance-legend"></div>
+        </div>
+        <button class="btn btn-primary btn-sm" id="toggle-add-block-btn">+ Lägg till block</button>
+      </div>
+
+      <div class="block-list" id="block-list"></div>
+
+      <div class="add-block-form hidden" id="add-block-form">
+        <h3>Nytt tidsblock</h3>
+        <div class="add-block-row">
+          <div class="form-group" style="margin:0">
+            <label>Typ</label>
+            <select id="new-block-type">
+              <option>Teori</option>
+              <option>Reflektion</option>
+              <option>Grupparbete</option>
+              <option>Upplevelseövning</option>
+              <option>Paus</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin:0">
+            <label>Titel</label>
+            <input type="text" id="new-block-title" placeholder="T.ex. Feedbackmodellen">
+          </div>
+          <div class="form-group" style="margin:0">
+            <label>Minuter</label>
+            <input type="number" id="new-block-duration" value="30" min="5" step="5">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Beskrivning (valfritt)</label>
+          <input type="text" id="new-block-desc" placeholder="Kort anteckning om innehållet">
+        </div>
+        <div style="display:flex; gap:.75rem; justify-content:flex-end">
+          <button class="btn btn-secondary btn-sm" id="cancel-add-block-btn">Avbryt</button>
+          <button class="btn btn-primary btn-sm" id="save-block-btn">Lägg till</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: ÖVNINGSBANK -->
+    <div class="tab-panel" id="tab-exercises">
+      <div class="exercises-top">
+        <input type="search" id="exercise-search" placeholder="Sök övning...">
+        <div class="filter-chips" id="filter-chips">
+          <button class="chip active" data-filter="Alla">Alla</button>
+          <button class="chip" data-filter="Upplevelseövning">Upplevelse</button>
+          <button class="chip" data-filter="Reflektion">Reflektion</button>
+          <button class="chip" data-filter="Grupparbete">Grupparbete</button>
+          <button class="chip" data-filter="Icebreaker">Icebreaker</button>
+          <button class="chip" data-filter="Fördjupning">Fördjupning</button>
+          <button class="chip" data-filter="⭐ Favoriter">⭐ Favoriter</button>
+        </div>
+      </div>
+      <div class="exercises-grid" id="exercises-grid"></div>
+    </div>
+
+    <!-- TAB: EXPORT -->
+    <div class="tab-panel" id="tab-export">
+      <div class="export-panel">
+        <h3>Exportera ditt upplägg</h3>
+        <p>Generera en PowerPoint-presentation baserad på din tidsplan. Mallen är anpassad för ett professionellt, modernt uttryck.</p>
+        <div class="export-options">
+          <div class="export-option">
+            <div class="export-option-icon">📊</div>
+            <div class="export-option-text">
+              <h4>PowerPoint-presentation (.pptx)</h4>
+              <p>Agendabild + en bild per tidsblock med typ, titel och beskrivning. Laddas ner direkt.</p>
+            </div>
+          </div>
+        </div>
+        <button class="btn btn-primary" id="export-pptx-btn">Ladda ner presentation</button>
+        <p style="margin-top:.75rem; font-size:.82rem; color:var(--muted);" id="export-status"></p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- NEW DELIVERY MODAL -->
+<div class="modal-overlay" id="new-delivery-modal">
+  <div class="modal">
+    <h2>Ny leverans</h2>
+    <div class="form-group">
+      <label>Titel</label>
+      <input type="text" id="new-title" placeholder="T.ex. Ledarskapsdag Nyhetsredaktionen">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Beställare</label>
+        <input type="text" id="new-client" placeholder="Namn">
+      </div>
+      <div class="form-group">
+        <label>Grupp / Team</label>
+        <input type="text" id="new-group" placeholder="Team eller avdelning">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Datum</label>
+      <input type="date" id="new-date">
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeNewDeliveryModal()">Avbryt</button>
+      <button class="btn btn-primary" id="create-delivery-btn">Skapa leverans</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast hidden" id="toast"></div>
+
+<script>
+  const SUPABASE_URL = 'https://vcykbabftxlyivxaohxa.supabase.co';
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZjeWtiYWJmdHhseWl2eGFvaHhhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkyNzA1NjQsImV4cCI6MjA5NDg0NjU2NH0.2cOhsyzrpu4l4PDh8qAmBhYfP-niCit4DSyufIsWuAU';
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  let currentUser = null;
+  let currentDelivery = null;
+  let allExercises = [];
+  let scheduleBlocks = [];
+  let activeFilter = 'Alla';
+
+  // ── TOAST ──
+  function showToast(msg, dur = 2500) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.remove('hidden');
+    setTimeout(() => t.classList.add('hidden'), dur);
+  }
+
+  // ── VIEWS ──
+  function showView(id) {
+    ['login-view','dashboard-view','delivery-view'].forEach(v =>
+      document.getElementById(v).classList.add('hidden'));
+    document.getElementById(id).classList.remove('hidden');
+  }
+
+  // ── AUTH ──
+  document.getElementById('login-btn').addEventListener('click', async () => {
+    const email = document.getElementById('login-email').value.trim();
+    const status = document.getElementById('login-status');
+    const btn = document.getElementById('login-btn');
+    if (!email) { status.textContent = 'Ange din e-postadress.'; status.className = 'login-status err'; return; }
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> Skickar...';
+    const { error } = await sb.auth.signInWithOtp({
+      email,
+      options: { emailRedirectTo: window.location.href }
+    });
+    btn.disabled = false;
+    btn.textContent = 'Skicka inloggningslänk';
+    if (error) {
+      status.textContent = 'Något gick fel. Försök igen.';
+      status.className = 'login-status err';
+    } else {
+      status.textContent = '✓ Kolla din e-post! Klicka på länken för att logga in.';
+      status.className = 'login-status ok';
+    }
+  });
+
+  document.getElementById('login-email').addEventListener('keydown', e => {
+    if (e.key === 'Enter') document.getElementById('login-btn').click();
+  });
+
+  document.getElementById('logout-btn').addEventListener('click', async () => {
+    await sb.auth.signOut();
+    currentUser = null;
+    showView('login-view');
+  });
+
+  sb.auth.onAuthStateChange((event, session) => {
+    if (session?.user) {
+      currentUser = session.user;
+      document.getElementById('user-email-display').textContent = currentUser.email;
+      showView('dashboard-view');
+      loadDeliveries();
+    }
+  });
+
+  // ── DELIVERIES ──
+  async function loadDeliveries() {
+    const { data } = await sb.from('deliveries').select('*').order('created_at', { ascending: false });
+    const grid = document.getElementById('deliveries-grid');
+    const empty = document.getElementById('deliveries-empty');
+    if (!data || data.length === 0) {
+      grid.innerHTML = '';
+      grid.appendChild(empty);
+      empty.classList.remove('hidden');
+      return;
+    }
+    empty.classList.add('hidden');
+    grid.innerHTML = '';
+    data.forEach(d => {
+      const card = document.createElement('div');
+      card.className = 'delivery-card';
+      card.innerHTML = `
+        <span class="card-status status-${d.status}">${d.status}</span>
+        <div class="card-title">${d.title}</div>
+        <div class="card-meta">${d.client || ''}${d.group_name ? ' · ' + d.group_name : ''}${d.delivery_date ? '<br>' + formatDate(d.delivery_date) : ''}</div>
+      `;
+      card.addEventListener('click', () => openDelivery(d));
+      grid.appendChild(card);
+    });
+  }
+
+  function formatDate(dateStr) {
+    if (!dateStr) return '';
+    const d = new Date(dateStr + 'T12:00:00');
+    return d.toLocaleDateString('sv-SE', { day: 'numeric', month: 'long', year: 'numeric' });
+  }
+
+  function openNewDeliveryModal() {
+    document.getElementById('new-delivery-modal').classList.add('open');
+    document.getElementById('new-title').focus();
+  }
+  function closeNewDeliveryModal() {
+    document.getElementById('new-delivery-modal').classList.remove('open');
+    ['new-title','new-client','new-group','new-date'].forEach(id => document.getElementById(id).value = '');
+  }
+
+  document.getElementById('new-delivery-btn').addEventListener('click', openNewDeliveryModal);
+  document.getElementById('new-delivery-modal').addEventListener('click', e => {
+    if (e.target === e.currentTarget) closeNewDeliveryModal();
+  });
+
+  document.getElementById('create-delivery-btn').addEventListener('click', async () => {
+    const title = document.getElementById('new-title').value.trim();
+    if (!title) { showToast('Ange en titel.'); return; }
+    const { data, error } = await sb.from('deliveries').insert({
+      user_id: currentUser.id,
+      title,
+      client: document.getElementById('new-client').value.trim() || null,
+      group_name: document.getElementById('new-group').value.trim() || null,
+      delivery_date: document.getElementById('new-date').value || null,
+    }).select().single();
+    if (error) { showToast('Fel: ' + error.message); return; }
+    closeNewDeliveryModal();
+    await loadDeliveries();
+    openDelivery(data);
+  });
+
+  // ── DELIVERY VIEW ──
+  async function openDelivery(delivery) {
+    currentDelivery = delivery;
+    document.getElementById('delivery-view-title').textContent = delivery.title;
+    document.getElementById('delivery-view-meta').textContent =
+      [delivery.client, delivery.group_name, delivery.delivery_date ? formatDate(delivery.delivery_date) : ''].filter(Boolean).join(' · ');
+    document.getElementById('delivery-status-select').value = delivery.status;
+    showView('delivery-view');
+    activateTab('notes');
+    await Promise.all([loadNotes(), loadSchedule(), loadExercises()]);
+  }
+
+  document.getElementById('back-btn').addEventListener('click', () => {
+    currentDelivery = null;
+    showView('dashboard-view');
+    loadDeliveries();
+  });
+
+  document.getElementById('delivery-status-select').addEventListener('change', async (e) => {
+    if (!currentDelivery) return;
+    await sb.from('deliveries').update({ status: e.target.value }).eq('id', currentDelivery.id);
+    currentDelivery.status = e.target.value;
+  });
+
+  // ── TABS ──
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => activateTab(btn.dataset.tab));
+  });
+
+  function activateTab(tab) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === 'tab-' + tab));
+  }
+
+  // ── BEHOVSANALYS ──
+  async function loadNotes() {
+    const { data } = await sb.from('delivery_notes').select('*').eq('delivery_id', currentDelivery.id).maybeSingle();
+    if (!data) return;
+    document.getElementById('note-client').value = data.purpose ? '' : (currentDelivery.client || '');
+    document.getElementById('note-group').value = currentDelivery.group_name || '';
+    document.getElementById('note-date').value = currentDelivery.delivery_date || '';
+    document.getElementById('note-participants').value = currentDelivery.participant_count || '';
+    document.getElementById('note-purpose').value = data.purpose || '';
+    document.getElementById('note-goals').value = data.goals || '';
+    document.getElementById('note-challenges').value = data.challenges || '';
+    document.getElementById('note-other').value = data.other_notes || '';
+  }
+
+  document.getElementById('save-notes-btn').addEventListener('click', async () => {
+    const btn = document.getElementById('save-notes-btn');
+    const status = document.getElementById('notes-save-status');
+    btn.disabled = true;
+    btn.textContent = 'Sparar...';
+
+    const deliveryUpdate = {
+      client: document.getElementById('note-client').value.trim() || null,
+      group_name: document.getElementById('note-group').value.trim() || null,
+      delivery_date: document.getElementById('note-date').value || null,
+      participant_count: parseInt(document.getElementById('note-participants').value) || null,
+    };
+    await sb.from('deliveries').update(deliveryUpdate).eq('id', currentDelivery.id);
+    Object.assign(currentDelivery, deliveryUpdate);
+
+    const notesData = {
+      delivery_id: currentDelivery.id,
+      purpose: document.getElementById('note-purpose').value.trim(),
+      goals: document.getElementById('note-goals').value.trim(),
+      challenges: document.getElementById('note-challenges').value.trim(),
+      other_notes: document.getElementById('note-other').value.trim(),
+      updated_at: new Date().toISOString(),
+    };
+    const { data: existing } = await sb.from('delivery_notes').select('id').eq('delivery_id', currentDelivery.id).maybeSingle();
+    if (existing) {
+      await sb.from('delivery_notes').update(notesData).eq('id', existing.id);
+    } else {
+      await sb.from('delivery_notes').insert(notesData);
+    }
+
+    btn.disabled = false;
+    btn.textContent = 'Spara';
+    status.textContent = '✓ Sparat ' + new Date().toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' });
+    status.className = 'save-status ok';
+  });
+
+  // ── TIDSPLAN ──
+  async function loadSchedule() {
+    const { data } = await sb.from('schedule_blocks').select('*')
+      .eq('delivery_id', currentDelivery.id).order('sort_order');
+    scheduleBlocks = data || [];
+    renderSchedule();
+  }
+
+  function renderSchedule() {
+    const list = document.getElementById('block-list');
+    list.innerHTML = '';
+
+    if (scheduleBlocks.length === 0) {
+      list.innerHTML = '<p style="color:var(--muted);font-size:.9rem;">Inga block ännu. Lägg till ditt första block nedan.</p>';
+    } else {
+      scheduleBlocks.forEach((block, i) => {
+        const el = document.createElement('div');
+        el.className = 'block-item';
+        el.dataset.type = block.block_type;
+        el.innerHTML = `
+          <span class="block-type-badge badge-${block.block_type}">${block.block_type}</span>
+          <div class="block-info">
+            <strong>${block.title}</strong>
+            ${block.description ? `<span>${block.description}</span>` : ''}
+          </div>
+          <span class="block-duration">${block.duration_minutes} min</span>
+          <div class="block-actions">
+            ${i > 0 ? `<button class="btn btn-ghost btn-sm" onclick="moveBlock('${block.id}', -1)">↑</button>` : '<button class="btn btn-ghost btn-sm" disabled>↑</button>'}
+            ${i < scheduleBlocks.length - 1 ? `<button class="btn btn-ghost btn-sm" onclick="moveBlock('${block.id}', 1)">↓</button>` : '<button class="btn btn-ghost btn-sm" disabled>↓</button>'}
+            <button class="btn btn-danger btn-sm" onclick="deleteBlock('${block.id}')">×</button>
+          </div>
+        `;
+        list.appendChild(el);
+      });
+    }
+
+    updateTimeSummary();
+  }
+
+  function updateTimeSummary() {
+    const total = scheduleBlocks.reduce((s, b) => s + b.duration_minutes, 0);
+    document.getElementById('total-time').textContent = formatMinutes(total);
+
+    const colors = { Teori: '#3B82F6', Reflektion: '#7C3AED', Grupparbete: '#059669', Upplevelseövning: '#D97706', Paus: '#94A3B8' };
+    const counts = {};
+    scheduleBlocks.forEach(b => counts[b.block_type] = (counts[b.block_type] || 0) + b.duration_minutes);
+
+    const bar = document.getElementById('balance-bar');
+    const legend = document.getElementById('balance-legend');
+    bar.innerHTML = '';
+    legend.innerHTML = '';
+
+    if (total > 0) {
+      Object.entries(counts).forEach(([type, mins]) => {
+        const seg = document.createElement('div');
+        seg.className = 'balance-segment';
+        seg.style.width = (mins / total * 100) + '%';
+        seg.style.background = colors[type];
+        seg.title = type + ': ' + mins + ' min';
+        bar.appendChild(seg);
+      });
+      legend.textContent = Object.entries(counts).map(([t, m]) => `${t}: ${m}min`).join(' · ');
+    }
+  }
+
+  function formatMinutes(m) {
+    if (m < 60) return m + ' min';
+    const h = Math.floor(m / 60), rest = m % 60;
+    return h + 'h' + (rest > 0 ? ' ' + rest + 'min' : '');
+  }
+
+  document.getElementById('toggle-add-block-btn').addEventListener('click', () => {
+    const form = document.getElementById('add-block-form');
+    form.classList.toggle('hidden');
+    if (!form.classList.contains('hidden')) document.getElementById('new-block-title').focus();
+  });
+  document.getElementById('cancel-add-block-btn').addEventListener('click', () => {
+    document.getElementById('add-block-form').classList.add('hidden');
+  });
+
+  document.getElementById('save-block-btn').addEventListener('click', async () => {
+    const title = document.getElementById('new-block-title').value.trim();
+    if (!title) { showToast('Ange en titel för blocket.'); return; }
+    const block = {
+      delivery_id: currentDelivery.id,
+      block_type: document.getElementById('new-block-type').value,
+      title,
+      duration_minutes: parseInt(document.getElementById('new-block-duration').value) || 30,
+      description: document.getElementById('new-block-desc').value.trim() || null,
+      sort_order: scheduleBlocks.length,
+    };
+    const { data, error } = await sb.from('schedule_blocks').insert(block).select().single();
+    if (error) { showToast('Kunde inte spara blocket.'); return; }
+    scheduleBlocks.push(data);
+    renderSchedule();
+    document.getElementById('new-block-title').value = '';
+    document.getElementById('new-block-desc').value = '';
+    document.getElementById('new-block-duration').value = '30';
+    showToast('Block tillagt!');
+  });
+
+  async function moveBlock(id, dir) {
+    const idx = scheduleBlocks.findIndex(b => b.id === id);
+    if (idx < 0) return;
+    const newIdx = idx + dir;
+    if (newIdx < 0 || newIdx >= scheduleBlocks.length) return;
+    [scheduleBlocks[idx], scheduleBlocks[newIdx]] = [scheduleBlocks[newIdx], scheduleBlocks[idx]];
+    scheduleBlocks[idx].sort_order = idx;
+    scheduleBlocks[newIdx].sort_order = newIdx;
+    renderSchedule();
+    await Promise.all([
+      sb.from('schedule_blocks').update({ sort_order: idx }).eq('id', scheduleBlocks[idx].id),
+      sb.from('schedule_blocks').update({ sort_order: newIdx }).eq('id', scheduleBlocks[newIdx].id),
+    ]);
+  }
+
+  async function deleteBlock(id) {
+    scheduleBlocks = scheduleBlocks.filter(b => b.id !== id);
+    renderSchedule();
+    await sb.from('schedule_blocks').delete().eq('id', id);
+  }
+
+  // ── ÖVNINGSBANK ──
+  async function loadExercises() {
+    const { data } = await sb.from('exercises').select('*').order('name');
+    allExercises = data || [];
+    renderExercises();
+  }
+
+  function renderExercises() {
+    const search = document.getElementById('exercise-search').value.toLowerCase();
+    const grid = document.getElementById('exercises-grid');
+    const filtered = allExercises.filter(e => {
+      const matchSearch = !search || e.name.toLowerCase().includes(search) || (e.purpose || '').toLowerCase().includes(search);
+      const matchFilter = activeFilter === 'Alla' || (activeFilter === '⭐ Favoriter' ? e.is_favorite : e.exercise_type === activeFilter);
+      return matchSearch && matchFilter;
+    });
+
+    grid.innerHTML = '';
+    if (filtered.length === 0) {
+      grid.innerHTML = '<p style="color:var(--muted);font-size:.9rem;grid-column:1/-1;">Inga övningar matchar sökningen.</p>';
+      return;
+    }
+    filtered.forEach(ex => {
+      const card = document.createElement('div');
+      card.className = 'exercise-card';
+      card.innerHTML = `
+        <div class="exercise-card-top">
+          <h4>${ex.name}</h4>
+          <button class="fav-btn" onclick="toggleFavorite('${ex.id}', ${ex.is_favorite})" title="${ex.is_favorite ? 'Ta bort favorit' : 'Lägg till favorit'}">${ex.is_favorite ? '⭐' : '☆'}</button>
+        </div>
+        <div class="exercise-meta">
+          <span class="block-type-badge badge-${ex.exercise_type}" style="font-size:.7rem;">${ex.exercise_type}</span>
+          &nbsp;${ex.duration_minutes} min
+        </div>
+        <div class="exercise-purpose">${ex.purpose || ''}</div>
+        <div class="exercise-card-footer">
+          <button class="btn btn-ghost btn-sm" onclick="showExerciseDetail('${ex.id}')">Läs mer</button>
+          <button class="btn btn-secondary btn-sm" onclick="addExerciseToSchedule('${ex.id}')">+ Lägg i plan</button>
+        </div>
+      `;
+      grid.appendChild(card);
+    });
+  }
+
+  document.getElementById('exercise-search').addEventListener('input', renderExercises);
+
+  document.querySelectorAll('.chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      activeFilter = chip.dataset.filter;
+      document.querySelectorAll('.chip').forEach(c => c.classList.toggle('active', c === chip));
+      renderExercises();
+    });
+  });
+
+  async function toggleFavorite(id, current) {
+    const ex = allExercises.find(e => e.id === id);
+    if (!ex) return;
+    ex.is_favorite = !current;
+    if (ex.is_global) {
+      // For global exercises, we can't update directly — just reflect locally
+    } else {
+      await sb.from('exercises').update({ is_favorite: !current }).eq('id', id);
+    }
+    renderExercises();
+  }
+
+  async function addExerciseToSchedule(id) {
+    const ex = allExercises.find(e => e.id === id);
+    if (!ex || !currentDelivery) return;
+    const block = {
+      delivery_id: currentDelivery.id,
+      block_type: ex.exercise_type === 'Icebreaker' ? 'Upplevelseövning' : ex.exercise_type === 'Fördjupning' ? 'Teori' : ex.exercise_type,
+      title: ex.name,
+      duration_minutes: ex.duration_minutes,
+      description: ex.purpose || null,
+      sort_order: scheduleBlocks.length,
+    };
+    const { data } = await sb.from('schedule_blocks').insert(block).select().single();
+    if (data) {
+      scheduleBlocks.push(data);
+      showToast(`"${ex.name}" lagd i tidsplanen!`);
+    }
+  }
+
+  function showExerciseDetail(id) {
+    const ex = allExercises.find(e => e.id === id);
+    if (!ex) return;
+    alert(`${ex.name}\n\n⏱ ${ex.duration_minutes} min · ${ex.exercise_type}\n\nSyfte:\n${ex.purpose || '—'}\n\nInstruktioner:\n${ex.instructions || '—'}`);
+  }
+
+  // ── POWERPOINT EXPORT ──
+  document.getElementById('export-pptx-btn').addEventListener('click', exportPptx);
+
+  async function exportPptx() {
+    if (!currentDelivery) return;
+    if (scheduleBlocks.length === 0) {
+      showToast('Lägg till block i tidsplanen först.');
+      return;
+    }
+
+    const btn = document.getElementById('export-pptx-btn');
+    const status = document.getElementById('export-status');
+    btn.disabled = true;
+    btn.textContent = 'Genererar...';
+    status.textContent = '';
+
+    const { data: notes } = await sb.from('delivery_notes').select('*').eq('delivery_id', currentDelivery.id).maybeSingle();
+
+    const pres = new PptxGenJS();
+    pres.layout = 'LAYOUT_16x9';
+
+    const DARK = '0F172A';
+    const ACCENT = '2563EB';
+    const LIGHT = 'F8FAFC';
+    const MUTED = '64748B';
+
+    const typeColors = {
+      'Teori': '3B82F6',
+      'Reflektion': '7C3AED',
+      'Grupparbete': '059669',
+      'Upplevelseövning': 'D97706',
+      'Paus': '94A3B8',
+    };
+
+    // ── SLIDE 1: COVER ──
+    const cover = pres.addSlide();
+    cover.addShape(pres.ShapeType.rect, { x: 0, y: 0, w: '100%', h: '100%', fill: { color: DARK } });
+    cover.addShape(pres.ShapeType.rect, { x: 0, y: 4.5, w: 0.08, h: 1.8, fill: { color: ACCENT } });
+    cover.addText(currentDelivery.title, {
+      x: 0.4, y: 1.2, w: 9, h: 1.5,
+      fontSize: 36, bold: true, color: 'FFFFFF',
+      fontFace: 'Calibri', align: 'left',
+    });
+    const metaParts = [currentDelivery.client, currentDelivery.group_name, currentDelivery.delivery_date ? formatDate(currentDelivery.delivery_date) : ''].filter(Boolean);
+    if (metaParts.length > 0) {
+      cover.addText(metaParts.join(' · '), {
+        x: 0.4, y: 2.8, w: 9, h: 0.5,
+        fontSize: 16, color: '94A3B8', fontFace: 'Calibri', align: 'left',
+      });
+    }
+    if (notes?.purpose) {
+      cover.addText(notes.purpose, {
+        x: 0.4, y: 3.5, w: 9, h: 0.8,
+        fontSize: 13, color: 'CBD5E1', fontFace: 'Calibri', align: 'left', italic: true,
+      });
+    }
+    cover.addText('SVT Workshop Studio', {
+      x: 0.4, y: 6.8, w: 9, h: 0.3,
+      fontSize: 10, color: '475569', fontFace: 'Calibri', align: 'left',
+    });
+
+    // ── SLIDE 2: AGENDA ──
+    const agenda = pres.addSlide();
+    agenda.addShape(pres.ShapeType.rect, { x: 0, y: 0, w: '100%', h: 1.1, fill: { color: DARK } });
+    agenda.addText('Program', {
+      x: 0.5, y: 0.2, w: 9, h: 0.7,
+      fontSize: 22, bold: true, color: 'FFFFFF', fontFace: 'Calibri',
+    });
+
+    const totalMins = scheduleBlocks.reduce((s, b) => s + b.duration_minutes, 0);
+    agenda.addText(`Total tid: ${formatMinutes(totalMins)}`, {
+      x: 0.5, y: 1.3, w: 9, h: 0.4,
+      fontSize: 12, color: MUTED, fontFace: 'Calibri',
+    });
+
+    scheduleBlocks.forEach((block, i) => {
+      const col = typeColors[block.block_type] || MUTED;
+      const y = 1.9 + i * 0.55;
+      if (y > 6.5) return;
+      agenda.addShape(pres.ShapeType.rect, { x: 0.5, y, w: 0.06, h: 0.38, fill: { color: col } });
+      agenda.addText(block.title, { x: 0.75, y, w: 6.5, h: 0.38, fontSize: 12, color: DARK, fontFace: 'Calibri', bold: true });
+      agenda.addText(block.block_type + ' · ' + block.duration_minutes + ' min', {
+        x: 0.75, y: y + 0.2, w: 6.5, h: 0.25, fontSize: 10, color: MUTED, fontFace: 'Calibri',
+      });
+      agenda.addText(block.duration_minutes + ' min', {
+        x: 8.5, y, w: 1, h: 0.38, fontSize: 11, color: MUTED, fontFace: 'Calibri', align: 'right',
+      });
+    });
+
+    // ── SLIDES PER BLOCK ──
+    scheduleBlocks.forEach(block => {
+      const slide = pres.addSlide();
+      const col = typeColors[block.block_type] || MUTED;
+
+      slide.addShape(pres.ShapeType.rect, { x: 0, y: 0, w: '100%', h: 0.12, fill: { color: col } });
+      slide.addShape(pres.ShapeType.rect, { x: 0, y: 0.12, w: '100%', h: 1.3, fill: { color: 'F8FAFC' } });
+
+      slide.addText(block.block_type.toUpperCase(), {
+        x: 0.5, y: 0.2, w: 4, h: 0.35,
+        fontSize: 9, bold: true, color: col, fontFace: 'Calibri', charSpacing: 2,
+      });
+      slide.addText(block.duration_minutes + ' min', {
+        x: 7, y: 0.2, w: 2.5, h: 0.35,
+        fontSize: 11, color: MUTED, fontFace: 'Calibri', align: 'right',
+      });
+      slide.addText(block.title, {
+        x: 0.5, y: 0.55, w: 9, h: 0.85,
+        fontSize: 26, bold: true, color: DARK, fontFace: 'Calibri',
+      });
+
+      if (block.description) {
+        slide.addText(block.description, {
+          x: 0.5, y: 1.8, w: 9, h: 1.5,
+          fontSize: 15, color: '334155', fontFace: 'Calibri', align: 'left',
+        });
+      }
+
+      slide.addShape(pres.ShapeType.rect, { x: 0, y: 6.9, w: '100%', h: 0.1, fill: { color: 'E2E8F0' } });
+      slide.addText(currentDelivery.title, {
+        x: 0.5, y: 6.95, w: 9, h: 0.25,
+        fontSize: 8, color: 'CBD5E1', fontFace: 'Calibri',
+      });
+    });
+
+    // ── FINAL SLIDE ──
+    const final = pres.addSlide();
+    final.addShape(pres.ShapeType.rect, { x: 0, y: 0, w: '100%', h: '100%', fill: { color: DARK } });
+    final.addText('Tack!', {
+      x: 0.5, y: 2.5, w: 9, h: 1.2,
+      fontSize: 48, bold: true, color: 'FFFFFF', fontFace: 'Calibri', align: 'center',
+    });
+    if (notes?.goals) {
+      final.addText(notes.goals, {
+        x: 1, y: 4, w: 8, h: 1.5,
+        fontSize: 14, color: '94A3B8', fontFace: 'Calibri', align: 'center', italic: true,
+      });
+    }
+
+    const filename = currentDelivery.title.replace(/[^a-zA-ZåäöÅÄÖ0-9 ]/g, '').trim() || 'workshop';
+    await pres.writeFile({ fileName: filename + '.pptx' });
+
+    btn.disabled = false;
+    btn.textContent = 'Ladda ner presentation';
+    status.textContent = '✓ Presentationen laddades ner!';
+    showToast('Presentationen är klar!');
+  }
+
+  // ── INIT ──
+  (async () => {
+    const { data: { session } } = await sb.auth.getSession();
+    if (session?.user) {
+      currentUser = session.user;
+      document.getElementById('user-email-display').textContent = currentUser.email;
+      showView('dashboard-view');
+      loadDeliveries();
+    }
+  })();
+</script>
+</body>
+</html>
